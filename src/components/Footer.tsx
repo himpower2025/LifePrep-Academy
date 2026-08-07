@@ -213,14 +213,19 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-blue-100 font-medium pt-4">
           <p>© 2022 Life-Prep Academy (LPA Nepal). All Rights Reserved.</p>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
             <button onClick={() => setShowPrivacyModal(true)} className="hover:text-amber-300 transition-colors">
               Privacy Policy & Terms
             </button>
             <span>•</span>
-            <span className="text-white font-semibold">Govt. Approved School (IEMIS 2081)</span>
+            <button
+              onClick={() => handlePageClick('admin')}
+              className="text-amber-300 hover:text-amber-200 font-bold underline flex items-center space-x-1"
+            >
+              <span>School Admin Portal</span>
+            </button>
             <span>•</span>
-            <span className="text-white font-semibold">Lalitpur, Nepal</span>
+            <span className="text-white font-semibold">Govt. Approved School (IEMIS 2081)</span>
           </div>
         </div>
       </div>

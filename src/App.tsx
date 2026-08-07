@@ -7,11 +7,13 @@ import { AboutPage } from './pages/AboutPage';
 import { AcademicsPage } from './pages/AcademicsPage';
 import { CampusLifePage } from './pages/CampusLifePage';
 import { AdmissionsPage } from './pages/AdmissionsPage';
+import { AdminPage } from './pages/AdminPage';
 
 import { AdmissionsModal } from './components/modals/AdmissionsModal';
 import { TourModal } from './components/modals/TourModal';
 import { SearchModal } from './components/modals/SearchModal';
 import { FacilityDetailModal } from './components/modals/FacilityDetailModal';
+import { PopupsDisplay } from './components/PopupsDisplay';
 
 import { CampusFacility } from './types';
 
@@ -85,6 +87,14 @@ export default function App() {
               onOpenTourModal={() => setTourModalOpen(true)}
             />
           )}
+
+          {currentPage === 'admin' && (
+            <AdminPage
+              onOpenAdmissions={() => setAdmissionsModalOpen(true)}
+              onOpenTour={() => setTourModalOpen(true)}
+              onNavigateHome={() => handleNavigatePage('home')}
+            />
+          )}
         </main>
       </div>
 
@@ -93,6 +103,12 @@ export default function App() {
         onOpenAdmissions={() => setAdmissionsModalOpen(true)}
         onOpenTour={() => setTourModalOpen(true)}
         onNavigatePage={handleNavigatePage}
+      />
+
+      {/* Active School Popups for Website Visitors */}
+      <PopupsDisplay
+        onOpenAdmissions={() => setAdmissionsModalOpen(true)}
+        onOpenTour={() => setTourModalOpen(true)}
       />
 
       {/* Interactive Modals */}

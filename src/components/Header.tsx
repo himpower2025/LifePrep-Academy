@@ -15,7 +15,8 @@ import {
   BookOpen,
   Award,
   Building2,
-  FileText
+  FileText,
+  ShieldCheck
 } from 'lucide-react';
 import { SCHOOL_INFO } from '../data/schoolData';
 
@@ -96,9 +97,14 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Book Campus Visit</span>
             </button>
             <span className="text-blue-800/80">|</span>
-            <span className="bg-amber-400/20 text-amber-300 px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wide uppercase border border-amber-400/40">
-              Govt. Approved School
-            </span>
+            <button
+              onClick={() => handleNavSelection('admin')}
+              className="bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wide uppercase border border-amber-400/40 flex items-center space-x-1 transition-all"
+              title="School Admin Portal (Popups & Academic Calendar)"
+            >
+              <ShieldCheck className="w-3 h-3 text-amber-300" />
+              <span>Admin Portal</span>
+            </button>
           </div>
         </div>
       </div>
@@ -524,6 +530,17 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleNavSelection('admin');
+                }}
+                className="w-full py-2.5 text-xs font-bold bg-blue-900 text-amber-300 rounded-xl flex items-center justify-center space-x-1.5"
+              >
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                <span>School Admin Portal</span>
+              </button>
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

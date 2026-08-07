@@ -107,3 +107,31 @@ export interface TourBookingData {
   numberOfVisitors: number;
   specialRequests: string;
 }
+
+export type PopupType = 'template' | 'image';
+
+export interface PopupItem {
+  id: string;
+  title: string;
+  popupType: PopupType;
+  isActive: boolean;
+  
+  // Template type specific fields (time & location)
+  tagline?: string;
+  dateTime?: string;
+  location?: string;
+  targetAudience?: string;
+  description?: string;
+  ctaText?: string;
+  ctaAction?: 'admissions' | 'tour' | 'url';
+  ctaUrl?: string;
+  themeStyle?: 'blue-gold' | 'modern-dark' | 'emerald' | 'warm-white';
+
+  // Image / Poster type specific fields
+  imageUrl?: string;
+  imageAlt?: string;
+  clickUrl?: string;
+  badgeText?: string;
+
+  createdAt: string;
+}
