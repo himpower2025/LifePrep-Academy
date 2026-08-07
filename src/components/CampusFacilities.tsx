@@ -39,9 +39,9 @@ export const CampusFacilities: React.FC<CampusFacilitiesProps> = ({
 
   return (
     <section id="facilities" className="py-16 sm:py-24 bg-white text-slate-900 font-sans border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
+        <div className="text-center max-w-4xl mx-auto space-y-3">
           <span className="text-xs font-bold text-blue-900 tracking-widest uppercase bg-blue-100/80 px-3.5 py-1 rounded-full border border-blue-200">
             World-Class Infrastructure
           </span>

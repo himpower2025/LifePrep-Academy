@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 w-full font-sans transition-all duration-300">
       {/* Utility Top Bar */}
       <div className="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white font-medium text-xs py-2 px-4 sm:px-6 lg:px-8 border-b border-blue-800/60 hidden md:block">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4 px-2 sm:px-4">
           <div className="flex items-center space-x-6">
             <a href={`tel:${SCHOOL_INFO.phone}`} className="flex items-center space-x-1.5 hover:text-amber-300 transition-colors">
               <Phone className="w-3.5 h-3.5 text-amber-400" />
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
             : 'bg-white text-slate-900 py-3.5 border-b border-slate-200'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo & School Branding */}
           <div
             onClick={() => handleNavSelection('home')}

@@ -34,7 +34,7 @@ export const AcademicsPage: React.FC<AcademicsPageProps> = ({
     <div className="space-y-12 pb-16">
       {/* Header Banner */}
       <section className="bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-white py-12 sm:py-16 border-b border-blue-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <div className="text-xs font-semibold text-blue-100 flex items-center space-x-2">
             <span>Home</span>
             <span>/</span>
@@ -52,7 +52,7 @@ export const AcademicsPage: React.FC<AcademicsPageProps> = ({
       </section>
 
       {/* Sub-stage selector */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap border-b border-slate-200 gap-2 sm:gap-6">
           {ACADEMIC_DIVISIONS.map((division) => (
             <button
@@ -74,7 +74,7 @@ export const AcademicsPage: React.FC<AcademicsPageProps> = ({
       </div>
 
       {/* Selected Division Detailed View */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0">
           {/* Details */}
           <div className="lg:col-span-7 p-6 sm:p-10 space-y-6 flex flex-col justify-between">

@@ -54,7 +54,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="absolute inset-0 bg-gradient-to-r from-blue-950 via-blue-900/90 to-blue-950/60" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Content Column */}
             <div className="lg:col-span-7 space-y-6">
@@ -165,7 +165,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Quick Stats Ribbon */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-6 rounded-2xl shadow-lg border border-slate-200">
           {SCHOOL_INFO.quickStats.map((stat, idx) => (
             <div key={idx} className="text-center p-3 border-r last:border-r-0 border-slate-100">
@@ -178,7 +178,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Principal Welcome Teaser Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-4">
             <div className="relative rounded-2xl overflow-hidden shadow-lg border border-slate-200">
@@ -227,7 +227,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* 4 Educational Pillars Teaser */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-10">
           <span className="text-xs font-bold text-blue-900 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
             Why Choose LPA
@@ -270,7 +270,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* Academic Divisions Teaser */}
       <section className="bg-slate-100/80 py-12 border-y border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <span className="text-xs font-bold text-blue-900 uppercase tracking-widest bg-blue-100 px-3 py-1 rounded-full border border-blue-200">
@@ -330,7 +330,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Campus Facilities Teaser */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <span className="text-xs font-bold text-blue-900 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
@@ -381,7 +381,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* Latest News & Upcoming Events Teaser */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Latest News */}
           <div className="lg:col-span-7 space-y-6">

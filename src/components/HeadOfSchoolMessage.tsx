@@ -15,9 +15,9 @@ export const HeadOfSchoolMessage: React.FC<HeadOfSchoolMessageProps> = ({
 
   return (
     <section id="about" className="py-16 sm:py-24 bg-white text-slate-900 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
+        <div className="text-center max-w-3xl mx-auto space-y-3 mb-12">
           <span className="text-xs font-bold text-blue-900 tracking-widest uppercase bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200">
             Welcome to Life Preparatory Academy
           </span>

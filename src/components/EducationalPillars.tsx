@@ -41,9 +41,9 @@ export const EducationalPillars: React.FC<EducationalPillarsProps> = ({
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+      <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
+        <div className="text-center max-w-4xl mx-auto space-y-3">
           <span className="text-xs font-bold text-amber-300 tracking-widest uppercase bg-amber-400/15 px-3.5 py-1 rounded-full border border-amber-300/30">
             The LPA Distinction
           </span>

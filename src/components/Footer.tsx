@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <footer id="footer" className="bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-blue-100 font-sans pt-16 pb-8 border-t border-blue-800/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Top Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-blue-800/80">
           {/* Column 1: School Identity */}

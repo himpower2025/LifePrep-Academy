@@ -37,7 +37,7 @@ export const CampusLifePage: React.FC<CampusLifePageProps> = ({
     <div className="space-y-12 pb-16">
       {/* Header Banner */}
       <section className="bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-white py-12 sm:py-16 border-b border-blue-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <div className="text-xs font-semibold text-blue-100 flex items-center space-x-2">
             <span>Home</span>
             <span>/</span>
@@ -55,7 +55,7 @@ export const CampusLifePage: React.FC<CampusLifePageProps> = ({
       </section>
 
       {/* Sub-tab navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap border-b border-slate-200 gap-2 sm:gap-6">
           <button
             onClick={() => setActiveTab('facilities')}
@@ -93,7 +93,7 @@ export const CampusLifePage: React.FC<CampusLifePageProps> = ({
       </div>
 
       {/* Main Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         {activeTab === 'facilities' && (
           <div className="space-y-8">
             <div className="max-w-2xl space-y-2">

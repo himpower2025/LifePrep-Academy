@@ -39,8 +39,8 @@ export const Hero: React.FC<HeroProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-blue-950 via-transparent to-black/20" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-16 sm:pb-24">
-        <div className="max-w-3xl space-y-6">
+      <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-16 sm:pb-24">
+        <div className="max-w-4xl 2xl:max-w-5xl space-y-6">
           {/* Badge */}
           <div className="inline-flex items-center space-x-2 bg-amber-400/15 border border-amber-300/40 rounded-full px-4 py-1.5 backdrop-blur-md">
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
@@ -152,7 +152,7 @@ export const Hero: React.FC<HeroProps> = ({
 
       {/* Floating Key Statistics Bar */}
       <div className="w-full bg-gradient-to-r from-blue-900 via-indigo-950 to-blue-900 border-y border-blue-800/80 py-6 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div className="max-w-[1600px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {SCHOOL_INFO.quickStats.map((stat, idx) => (
             <div key={idx} className="space-y-1">
               <p className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-serif">
