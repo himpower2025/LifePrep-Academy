@@ -43,6 +43,14 @@ export const HeadOfSchoolMessage: React.FC<HeadOfSchoolMessageProps> = ({
                   alt={HEAD_OF_SCHOOL_MESSAGE.name}
                   className="w-full h-[400px] object-cover object-top"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src.endsWith('/principal.png')) {
+                      target.src = '/pricipal.png';
+                    } else {
+                      target.src = HEAD_OF_SCHOOL_MESSAGE.fallbackImage;
+                    }
+                  }}
                 />
                 <div className="p-5 bg-blue-900 text-white">
                   <h3 className="text-lg font-bold font-serif text-amber-300">

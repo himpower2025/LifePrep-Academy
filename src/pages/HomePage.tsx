@@ -187,6 +187,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                 alt={HEAD_OF_SCHOOL_MESSAGE.name}
                 className="w-full h-[320px] object-cover object-top"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src.endsWith('/principal.png')) {
+                    target.src = '/pricipal.png';
+                  } else {
+                    target.src = HEAD_OF_SCHOOL_MESSAGE.fallbackImage;
+                  }
+                }}
               />
               <div className="p-4 bg-blue-900 text-white">
                 <p className="text-sm font-bold text-amber-300">{HEAD_OF_SCHOOL_MESSAGE.name}</p>

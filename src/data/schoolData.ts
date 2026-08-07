@@ -46,7 +46,8 @@ export const HEAD_OF_SCHOOL_MESSAGE = {
   name: "Mr. Raju Moktan",
   title: "Founder & Principal",
   degree: "M.Ed. in Educational Leadership & Pedagogy",
-  image: headSchoolImg,
+  image: "/principal.png",
+  fallbackImage: headSchoolImg,
   quote: "At LifePrep Academy, education is not about passive listening. It is about empowering every child to become an active problem solver, a critical thinker, and a compassionate citizen prepared for life.",
   message: `Welcome to Life Preparatory Academy (LifePrep Academy) in Lalitpur. Founded in 2022 with a steadfast commitment to progressive education, our mission is captured in our school motto: "Preparing Pupils for Life."
 
