@@ -51,8 +51,15 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Column 1: School Identity */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handlePageClick('home')}>
-              <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-slate-950 shadow-lg">
-                <GraduationCap className="w-6 h-6" />
+              <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-lg p-1 overflow-hidden border border-blue-800">
+                <img
+                  src={SCHOOL_INFO.logoUrl}
+                  alt="Life-Prep Academy Logo"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
               </div>
               <div>
                 <span className="text-xl font-bold font-serif text-white tracking-tight">

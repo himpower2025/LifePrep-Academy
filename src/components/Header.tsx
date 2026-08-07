@@ -117,20 +117,21 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => handleNavSelection('home')}
             className="flex items-center space-x-3 cursor-pointer group"
           >
-            <div className="relative w-11 h-11 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-xl p-0.5 shadow-md shadow-blue-900/15 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full bg-blue-900 rounded-[10px] flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-amber-400" />
-              </div>
+            <div className="relative w-11 h-11 bg-white rounded-xl p-1 border border-blue-200 shadow-md shadow-blue-900/10 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center overflow-hidden">
+              <img
+                src={SCHOOL_INFO.logoUrl}
+                alt="Life-Prep Academy Logo"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  // Fallback to GraduationCap if logo image fails to load
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold tracking-tight text-blue-950 font-serif">
-                  Life-Prep Academy
-                </span>
-                <span className="bg-blue-900 text-amber-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
-                  NEPAL
-                </span>
-              </div>
+              <span className="text-xl font-bold tracking-tight text-blue-950 font-serif block">
+                Life-Prep Academy
+              </span>
               <p className="text-[11px] text-blue-900/70 font-medium hidden sm:block tracking-wide">
                 Progressive Education in Lalitpur
               </p>

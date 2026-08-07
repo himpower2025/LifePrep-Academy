@@ -18,6 +18,7 @@ export const SCHOOL_INFO = {
   shortName: "LifePrep Academy",
   motto: "Preparing Pupils for Life",
   tagline: "Progressive K–10 Education in Lalitpur",
+  logoUrl: "/logo.png",
   established: "2022",
   location: "Lalitpur-13, Nepal",
   fullAddress: "Lalitpur-13, Kathmandu Valley, Nepal",
