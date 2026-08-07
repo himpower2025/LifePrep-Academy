@@ -1,0 +1,6 @@
+{
+  "name": "Life-Prep Academy - Nepal",
+  "description": "Official website of Life-Prep Academy (LPA Nepal), providing holistic, values-based international education in Nepal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
