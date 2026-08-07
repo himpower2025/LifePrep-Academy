@@ -39,6 +39,24 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
+  const dropdownTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = (name: string) => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+      dropdownTimeoutRef.current = null;
+    }
+    setActiveDropdown(name);
+  };
+
+  const handleMouseLeave = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 150);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -149,8 +167,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 1. About LPA Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setActiveDropdown('about')}
-              onMouseLeave={() => setActiveDropdown(null)}
+              onMouseEnter={() => handleMouseEnter('about')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 onClick={() => handleNavSelection('about')}
@@ -161,32 +179,34 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <span>About LPA</span>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'about' ? 'rotate-180 text-blue-900' : ''}`} />
               </button>
 
               {activeDropdown === 'about' && (
-                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
-                  <button
-                    onClick={() => handleNavSelection('about', 'principal')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Users className="w-4 h-4 text-blue-900" />
-                    <span>Principal's Welcome & Message</span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('about', 'philosophy')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>Constructivist Pedagogy</span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('about', 'facts')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Award className="w-4 h-4 text-blue-900" />
-                    <span>Accreditations & Fast Facts</span>
-                  </button>
+                <div className="absolute top-full left-0 pt-1 z-50 w-64">
+                  <div className="bg-white rounded-2xl shadow-xl border border-slate-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button
+                      onClick={() => handleNavSelection('about', 'principal')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Users className="w-4 h-4 text-blue-900" />
+                      <span>Principal's Welcome & Message</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('about', 'philosophy')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span>Constructivist Pedagogy</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('about', 'facts')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Award className="w-4 h-4 text-blue-900" />
+                      <span>Accreditations & Fast Facts</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -194,8 +214,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 2. Academics Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setActiveDropdown('academics')}
-              onMouseLeave={() => setActiveDropdown(null)}
+              onMouseEnter={() => handleMouseEnter('academics')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 onClick={() => handleNavSelection('academics')}
@@ -206,38 +226,40 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <span>Academics</span>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'academics' ? 'rotate-180 text-blue-900' : ''}`} />
               </button>
 
               {activeDropdown === 'academics' && (
-                <div className="absolute top-full left-0 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
-                  <button
-                    onClick={() => handleNavSelection('academics', 'pre-primary')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
-                  >
-                    <span>Early Childhood (ECD)</span>
-                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">
-                      Nursery–UKG
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('academics', 'primary')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
-                  >
-                    <span>Primary School Division</span>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">
-                      Grades 1–5
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('academics', 'secondary')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
-                  >
-                    <span>Secondary School & SEE Prep</span>
-                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
-                      Grades 6–10
-                    </span>
-                  </button>
+                <div className="absolute top-full left-0 pt-1 z-50 w-72">
+                  <div className="bg-white rounded-2xl shadow-xl border border-slate-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button
+                      onClick={() => handleNavSelection('academics', 'pre-primary')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
+                    >
+                      <span>Early Childhood (ECD)</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">
+                        Nursery–UKG
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('academics', 'primary')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
+                    >
+                      <span>Primary School Division</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">
+                        Grades 1–5
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('academics', 'secondary')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
+                    >
+                      <span>Secondary School & SEE Prep</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+                        Grades 6–10
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -245,8 +267,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 3. Campus Life Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setActiveDropdown('campus-life')}
-              onMouseLeave={() => setActiveDropdown(null)}
+              onMouseEnter={() => handleMouseEnter('campus-life')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 onClick={() => handleNavSelection('campus-life')}
@@ -257,32 +279,34 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <span>Campus Life</span>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'campus-life' ? 'rotate-180 text-blue-900' : ''}`} />
               </button>
 
               {activeDropdown === 'campus-life' && (
-                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
-                  <button
-                    onClick={() => handleNavSelection('campus-life', 'facilities')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Building2 className="w-4 h-4 text-blue-900" />
-                    <span>Campus Facilities & STEM Hub</span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('campus-life', 'clubs')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>Clubs, Sports & Arts</span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('campus-life', 'news')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Calendar className="w-4 h-4 text-blue-900" />
-                    <span>News & Open House Events</span>
-                  </button>
+                <div className="absolute top-full left-0 pt-1 z-50 w-64">
+                  <div className="bg-white rounded-2xl shadow-xl border border-slate-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button
+                      onClick={() => handleNavSelection('campus-life', 'facilities')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Building2 className="w-4 h-4 text-blue-900" />
+                      <span>Campus Facilities & STEM Hub</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('campus-life', 'clubs')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span>Clubs, Sports & Arts</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('campus-life', 'news')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Calendar className="w-4 h-4 text-blue-900" />
+                      <span>News & Open House Events</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -290,8 +314,8 @@ export const Header: React.FC<HeaderProps> = ({
             {/* 4. Admissions Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setActiveDropdown('admissions')}
-              onMouseLeave={() => setActiveDropdown(null)}
+              onMouseEnter={() => handleMouseEnter('admissions')}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 onClick={() => handleNavSelection('admissions')}
@@ -302,32 +326,34 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 <span>Admissions</span>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'admissions' ? 'rotate-180 text-blue-900' : ''}`} />
               </button>
 
               {activeDropdown === 'admissions' && (
-                <div className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
-                  <button
-                    onClick={() => handleNavSelection('admissions', 'process')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <FileText className="w-4 h-4 text-blue-900" />
-                    <span>5-Step Application Process</span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('admissions', 'tour')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Users className="w-4 h-4 text-blue-900" />
-                    <span>Schedule Campus Visit</span>
-                  </button>
-                  <button
-                    onClick={() => handleNavSelection('admissions', 'faq')}
-                    className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>Requirements & FAQ</span>
-                  </button>
+                <div className="absolute top-full left-0 pt-1 z-50 w-64">
+                  <div className="bg-white rounded-2xl shadow-xl border border-slate-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button
+                      onClick={() => handleNavSelection('admissions', 'process')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <FileText className="w-4 h-4 text-blue-900" />
+                      <span>5-Step Application Process</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('admissions', 'tour')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Users className="w-4 h-4 text-blue-900" />
+                      <span>Schedule Campus Visit</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('admissions', 'faq')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span>Requirements & FAQ</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   Calendar,
@@ -25,6 +25,12 @@ export const AdmissionsPage: React.FC<AdmissionsPageProps> = ({
   onOpenTourModal,
 }) => {
   const [activeTab, setActiveTab] = useState<string>(initialSubTab);
+
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveTab(initialSubTab);
+    }
+  }, [initialSubTab]);
 
   return (
     <div className="space-y-12 pb-16">

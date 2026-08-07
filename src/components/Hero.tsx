@@ -45,15 +45,15 @@ export const Hero: React.FC<HeroProps> = ({
           <div className="inline-flex items-center space-x-2 bg-amber-400/15 border border-amber-300/40 rounded-full px-4 py-1.5 backdrop-blur-md">
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
             <span className="text-xs font-bold text-amber-300 tracking-wide uppercase">
-              Admissions Now Open for 2026–2027
+              Empowering Minds • Shaping Futures
             </span>
           </div>
 
           {/* Main Display Headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif leading-tight tracking-tight text-white">
-            Preparing Pupils <br />
+            "Preparing Pupils <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400">
-              for Life.
+              for Life."
             </span>
           </h1>
 

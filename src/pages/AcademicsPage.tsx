@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   BookOpen,
@@ -27,6 +27,12 @@ export const AcademicsPage: React.FC<AcademicsPageProps> = ({
   const [activeStage, setActiveStage] = useState<string>(
     initialSubTab === 'overview' ? 'pre-primary' : initialSubTab
   );
+
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveStage(initialSubTab === 'overview' ? 'pre-primary' : initialSubTab);
+    }
+  }, [initialSubTab]);
 
   const selectedDivision = ACADEMIC_DIVISIONS.find((d) => d.id === activeStage) || ACADEMIC_DIVISIONS[0];
 

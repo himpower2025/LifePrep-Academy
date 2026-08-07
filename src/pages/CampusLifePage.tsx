@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2,
   Cpu,
@@ -27,6 +27,12 @@ export const CampusLifePage: React.FC<CampusLifePageProps> = ({
   onOpenAdmissions,
 }) => {
   const [activeTab, setActiveTab] = useState<string>(initialSubTab);
+
+  useEffect(() => {
+    if (initialSubTab) {
+      setActiveTab(initialSubTab);
+    }
+  }, [initialSubTab]);
   const [selectedNewsCategory, setSelectedNewsCategory] = useState<string>('All');
 
   const filteredNews = selectedNewsCategory === 'All'
