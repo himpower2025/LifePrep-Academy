@@ -33,6 +33,29 @@ import {
   saveStoredNews
 } from '../data/adminStore';
 
+const ADMIN_EMAILS_STORAGE_KEY = 'lpa_allowed_admin_emails_v2';
+
+const getStoredAllowedEmails = (): string[] => {
+  try {
+    const raw = localStorage.getItem(ADMIN_EMAILS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {
+    console.error('Failed to parse allowed admin emails', e);
+  }
+  return ['rajumoktan@gmail.com'];
+};
+
+const saveStoredAllowedEmails = (emails: string[]) => {
+  try {
+    localStorage.setItem(ADMIN_EMAILS_STORAGE_KEY, JSON.stringify(emails));
+  } catch (e) {
+    console.error('Failed to save allowed admin emails', e);
+  }
+};
+
 interface AdminPageProps {
   onOpenAdmissions: () => void;
   onOpenTour: () => void;
@@ -50,8 +73,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   const [pinInput, setPinInput] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  // Active admin tab: 'popups' | 'events' | 'news'
-  const [activeTab, setActiveTab] = useState<'popups' | 'events' | 'news'>('popups');
+  // Authorized Admin Emails State
+  const [allowedEmails, setAllowedEmails] = useState<string[]>(['rajumoktan@gmail.com']);
+  const [newAdminEmailInput, setNewAdminEmailInput] = useState<string>('');
+
+  // Active admin tab: 'popups' | 'events' | 'news' | 'admins'
+  const [activeTab, setActiveTab] = useState<'popups' | 'events' | 'news' | 'admins'>('popups');
 
   // Popup Management States
   const [popups, setPopups] = useState<PopupItem[]>([]);
@@ -108,6 +135,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       setIsAuthenticated(true);
     }
 
+    setAllowedEmails(getStoredAllowedEmails());
     setPopups(getStoredPopups());
     setEvents(getStoredEvents());
     setNewsList(getStoredNews());
@@ -115,10 +143,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailInput.trim() || !emailInput.includes('@')) {
+    const cleanEmail = emailInput.trim().toLowerCase();
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       setAuthError('Please enter a valid administrator email address.');
       return;
     }
+
+    // Check if entered email is authorized
+    const isAuthorized = allowedEmails.some(
+      (addr) => addr.trim().toLowerCase() === cleanEmail
+    );
+
+    if (!isAuthorized) {
+      setAuthError(`Access denied: '${emailInput}' is not registered as an authorized administrator.`);
+      return;
+    }
+
     if (!pinInput || pinInput.trim().length < 4) {
       setAuthError('Please enter a password (at least 4 characters).');
       return;
@@ -126,8 +167,43 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
     setIsAuthenticated(true);
     sessionStorage.setItem('lpa_admin_authed', 'true');
-    sessionStorage.setItem('lpa_admin_email', emailInput.trim());
+    sessionStorage.setItem('lpa_admin_email', cleanEmail);
     setAuthError('');
+  };
+
+  const handleAddAdminEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newEmail = newAdminEmailInput.trim().toLowerCase();
+    if (!newEmail || !newEmail.includes('@')) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    if (allowedEmails.some((addr) => addr.toLowerCase() === newEmail)) {
+      alert('This email address is already registered as an administrator.');
+      return;
+    }
+
+    const updated = [...allowedEmails, newEmail];
+    setAllowedEmails(updated);
+    saveStoredAllowedEmails(updated);
+    setNewAdminEmailInput('');
+    alert(`Administrator access granted to ${newEmail}`);
+  };
+
+  const handleRemoveAdminEmail = (emailToRemove: string) => {
+    if (allowedEmails.length <= 1) {
+      alert('At least one administrator email must remain in the system.');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to revoke admin access for ${emailToRemove}?`)) {
+      const updated = allowedEmails.filter(
+        (addr) => addr.toLowerCase() !== emailToRemove.toLowerCase()
+      );
+      setAllowedEmails(updated);
+      saveStoredAllowedEmails(updated);
+    }
   };
 
   const handleLogout = () => {
@@ -463,6 +539,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({
           >
             <FileText className="w-4 h-4" />
             <span>School News & Updates ({newsList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('admins')}
+            className={`flex-1 min-w-[160px] py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 ${
+              activeTab === 'admins'
+                ? 'bg-blue-900 text-amber-300 shadow-md'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Admin Accounts ({allowedEmails.length})</span>
           </button>
         </div>
 
@@ -1174,6 +1262,89 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB 4: ADMIN ACCOUNTS MANAGEMENT */}
+        {activeTab === 'admins' && (
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold font-serif text-slate-900">
+                  Authorized Administrator Emails
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Manage email addresses permitted to access this Admin Portal. Only registered emails can sign in.
+                </p>
+              </div>
+            </div>
+
+            {/* Grant New Admin Email Form */}
+            <form onSubmit={handleAddAdminEmail} className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-200 space-y-3">
+              <label className="block text-xs font-bold text-slate-800">
+                Grant New Admin Permission (Email Address)
+              </label>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type="email"
+                    required
+                    value={newAdminEmailInput}
+                    onChange={(e) => setNewAdminEmailInput(e.target.value)}
+                    placeholder="e.g. newadmin@lpanc.edu.np"
+                    className="w-full px-4 py-2.5 pl-10 border border-slate-300 rounded-xl text-xs bg-white focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                  />
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                </div>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-blue-900 hover:bg-blue-800 text-amber-300 font-bold text-xs rounded-xl shadow transition-transform active:scale-95 flex items-center justify-center space-x-2 shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Admin Email</span>
+                </button>
+              </div>
+            </form>
+
+            {/* Admin Email List */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Currently Registered Admin Accounts ({allowedEmails.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {allowedEmails.map((email) => {
+                  const isMainAdmin = email.toLowerCase() === 'rajumoktan@gmail.com';
+                  return (
+                    <div
+                      key={email}
+                      className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shadow-sm"
+                    >
+                      <div className="flex items-center space-x-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-900 flex items-center justify-center shrink-0">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <div className="truncate">
+                          <p className="text-xs font-bold text-slate-900 truncate">{email}</p>
+                          <span className="text-[10px] text-slate-500 font-medium">
+                            {isMainAdmin ? 'Primary Administrator' : 'Authorized Administrator'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {!isMainAdmin && (
+                        <button
+                          onClick={() => handleRemoveAdminEmail(email)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                          title="Revoke Admin Permission"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
