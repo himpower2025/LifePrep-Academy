@@ -16,7 +16,8 @@ import {
   Award,
   Building2,
   FileText,
-  ShieldCheck
+  ShieldCheck,
+  PenTool
 } from 'lucide-react';
 import { SCHOOL_INFO } from '../data/schoolData';
 
@@ -357,6 +358,73 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
+
+            {/* 5. Articles Dropdown (Faculty Columns) */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('articles')}
+              onMouseLeave={handleMouseLeave}
+            >
+              <button
+                onClick={() => handleNavSelection('articles')}
+                className={`px-3.5 py-2 text-sm font-bold rounded-xl transition-colors flex items-center space-x-1 ${
+                  currentPage === 'articles'
+                    ? 'text-blue-900 bg-blue-50 border border-blue-200'
+                    : 'text-slate-800 hover:text-blue-900 hover:bg-blue-50/60'
+                }`}
+              >
+                <span>Articles</span>
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${activeDropdown === 'articles' ? 'rotate-180 text-blue-900' : ''}`} />
+              </button>
+
+              {activeDropdown === 'articles' && (
+                <div className="absolute top-full left-0 pt-1 z-50 w-72">
+                  <div className="bg-white rounded-2xl shadow-xl border border-slate-200 py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button
+                      onClick={() => handleNavSelection('articles', 'all')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <BookOpen className="w-4 h-4 text-blue-900" />
+                      <span>All Articles & Columns</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'general')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center space-x-2"
+                    >
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                      <span>General Pedagogy Columns</span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'pre-primary')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
+                    >
+                      <span>Early Childhood (ECD)</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded">
+                        Nursery–UKG
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'primary')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
+                    >
+                      <span>Primary School Columns</span>
+                      <span className="text-[10px] bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded">
+                        Grades 1–5
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'secondary')}
+                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between"
+                    >
+                      <span>Secondary School Columns</span>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-900 font-bold px-2 py-0.5 rounded">
+                        Grades 6–10
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Action CTAs & Search */}
@@ -549,6 +617,52 @@ export const Header: React.FC<HeaderProps> = ({
                       className="w-full text-left px-3 py-2 text-slate-700 hover:text-blue-900 hover:bg-blue-50 rounded"
                     >
                       • Requirements & FAQ
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Articles Accordion */}
+              <div className="border border-slate-100 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setMobileAccordion(mobileAccordion === 'articles' ? null : 'articles')}
+                  className="w-full text-left px-3.5 py-3 text-sm font-bold text-slate-800 flex items-center justify-between bg-slate-50/80"
+                >
+                  <span>5. Educator Articles</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${mobileAccordion === 'articles' ? 'rotate-180' : ''}`} />
+                </button>
+
+                {mobileAccordion === 'articles' && (
+                  <div className="bg-white p-2 space-y-1 border-t border-slate-100 text-xs">
+                    <button
+                      onClick={() => handleNavSelection('articles', 'all')}
+                      className="w-full text-left px-3 py-2 text-slate-700 hover:text-blue-900 hover:bg-blue-50 rounded"
+                    >
+                      • All Articles & Columns
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'general')}
+                      className="w-full text-left px-3 py-2 text-slate-700 hover:text-blue-900 hover:bg-blue-50 rounded"
+                    >
+                      • General Pedagogy
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'pre-primary')}
+                      className="w-full text-left px-3 py-2 text-slate-700 hover:text-blue-900 hover:bg-blue-50 rounded"
+                    >
+                      • Early Childhood (ECD)
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'primary')}
+                      className="w-full text-left px-3 py-2 text-slate-700 hover:text-blue-900 hover:bg-blue-50 rounded"
+                    >
+                      • Primary School (Grades 1–5)
+                    </button>
+                    <button
+                      onClick={() => handleNavSelection('articles', 'secondary')}
+                      className="w-full text-left px-3 py-2 text-slate-700 hover:text-blue-900 hover:bg-blue-50 rounded"
+                    >
+                      • Secondary School (Grades 6–10)
                     </button>
                   </div>
                 )}

@@ -1,16 +1,17 @@
 import { PopupItem, EventItem, NewsArticle } from '../types';
 import { UPCOMING_EVENTS, LATEST_NEWS } from './schoolData';
 
-const POPUPS_STORAGE_KEY = 'lpa_school_popups_v2';
+const POPUPS_STORAGE_KEY = 'lpa_school_popups_v3';
 const EVENTS_STORAGE_KEY = 'lpa_school_events_v2';
 const NEWS_STORAGE_KEY = 'lpa_school_news_v2';
+const ARTICLES_STORAGE_KEY = 'lpa_school_articles_v1';
 
 export const DEFAULT_POPUPS: PopupItem[] = [
   {
     id: 'popup-template-1',
     title: '2026–2027 Parents Orientation & Campus Tour',
     popupType: 'template',
-    isActive: true,
+    isActive: false, // Default inactive per user request so page doesn't pop up on load
     tagline: 'Admissions & Open House',
     dateTime: 'Tuesday, August 25, 2026 | 10:00 AM ~ 12:00 PM',
     location: 'Main Auditorium & STEM Innovation Center, LPA Campus',
@@ -25,7 +26,7 @@ export const DEFAULT_POPUPS: PopupItem[] = [
     id: 'popup-image-2',
     title: '2026 STEM & Creative Science Expo Announcement',
     popupType: 'image',
-    isActive: true,
+    isActive: false, // Default inactive per user request
     badgeText: 'NOTICE',
     imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80',
     imageAlt: 'STEM & Science Expo Official Poster',

@@ -135,3 +135,22 @@ export interface PopupItem {
 
   createdAt: string;
 }
+
+export type ArticleDivision = 'general' | 'pre-primary' | 'primary' | 'secondary';
+
+export interface EducatorArticle {
+  id: string;
+  title: string;
+  authorName: string;
+  authorRole: string;
+  authorAvatar?: string;
+  division: ArticleDivision;
+  date: string;
+  readTime: string;
+  summary: string;
+  content: string;
+  coverImage?: string;
+  tags: string[];
+  featured?: boolean;
+  createdAt: string;
+}

@@ -21,9 +21,11 @@ import {
   ArrowRight,
   ShieldCheck,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  BookOpen,
+  PenTool
 } from 'lucide-react';
-import { PopupItem, PopupType, EventItem, NewsArticle } from '../types';
+import { PopupItem, PopupType, EventItem, NewsArticle, EducatorArticle, ArticleDivision } from '../types';
 import {
   getStoredPopups,
   saveStoredPopups,
@@ -32,6 +34,10 @@ import {
   getStoredNews,
   saveStoredNews
 } from '../data/adminStore';
+import {
+  getStoredArticles,
+  saveStoredArticles
+} from '../data/articlesData';
 
 const ADMIN_EMAILS_STORAGE_KEY = 'lpa_allowed_admin_emails_v2';
 
@@ -77,8 +83,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   const [allowedEmails, setAllowedEmails] = useState<string[]>(['rajumoktan@gmail.com']);
   const [newAdminEmailInput, setNewAdminEmailInput] = useState<string>('');
 
-  // Active admin tab: 'popups' | 'events' | 'news' | 'admins'
-  const [activeTab, setActiveTab] = useState<'popups' | 'events' | 'news' | 'admins'>('popups');
+  // Active admin tab: 'popups' | 'events' | 'news' | 'articles' | 'admins'
+  const [activeTab, setActiveTab] = useState<'popups' | 'events' | 'news' | 'articles' | 'admins'>('popups');
 
   // Popup Management States
   const [popups, setPopups] = useState<PopupItem[]>([]);
@@ -127,6 +133,20 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80'
   });
 
+  // Articles Management States
+  const [articles, setArticles] = useState<EducatorArticle[]>([]);
+  const [isEditingArticle, setIsEditingArticle] = useState<boolean>(false);
+  const [newArticleForm, setNewArticleForm] = useState<Partial<EducatorArticle>>({
+    title: '',
+    authorName: 'Mr. Raju Moktan',
+    authorRole: 'Founder & Principal',
+    division: 'general',
+    summary: '',
+    content: '',
+    coverImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80',
+    tags: ['Pedagogy', 'LifePrep']
+  });
+
   // Load stored data
   useEffect(() => {
     // Check session auth
@@ -139,6 +159,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setPopups(getStoredPopups());
     setEvents(getStoredEvents());
     setNewsList(getStoredNews());
+    setArticles(getStoredArticles());
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -383,6 +404,51 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     }
   };
 
+  // Article Actions
+  const handleSaveArticle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newArticleForm.title || !newArticleForm.authorName) return;
+
+    const newItem: EducatorArticle = {
+      id: `art-${Date.now()}`,
+      title: newArticleForm.title || '',
+      authorName: newArticleForm.authorName || 'Educator',
+      authorRole: newArticleForm.authorRole || 'Faculty Lead',
+      authorAvatar: newArticleForm.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      division: newArticleForm.division || 'general',
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      readTime: `${Math.max(3, Math.ceil((newArticleForm.content || '').split(' ').length / 180))} min read`,
+      summary: newArticleForm.summary || (newArticleForm.content?.slice(0, 140) + '...') || '',
+      content: newArticleForm.content || '',
+      coverImage: newArticleForm.coverImage || 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80',
+      tags: newArticleForm.tags || ['Pedagogy', 'LifePrep'],
+      createdAt: new Date().toISOString()
+    };
+
+    const updated = [newItem, ...articles];
+    setArticles(updated);
+    saveStoredArticles(updated);
+    setIsEditingArticle(false);
+    setNewArticleForm({
+      title: '',
+      authorName: 'Mr. Raju Moktan',
+      authorRole: 'Founder & Principal',
+      division: 'general',
+      summary: '',
+      content: '',
+      coverImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80',
+      tags: ['Pedagogy', 'LifePrep']
+    });
+  };
+
+  const handleDeleteArticle = (id: string) => {
+    if (confirm('Are you sure you want to delete this faculty article?')) {
+      const updated = articles.filter((a) => a.id !== id);
+      setArticles(updated);
+      saveStoredArticles(updated);
+    }
+  };
+
   // LOGIN SCREEN
   if (!isAuthenticated) {
     return (
@@ -539,6 +605,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({
           >
             <FileText className="w-4 h-4" />
             <span>School News & Updates ({newsList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('articles')}
+            className={`flex-1 min-w-[160px] py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center space-x-2 ${
+              activeTab === 'articles'
+                ? 'bg-blue-900 text-amber-300 shadow-md'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <PenTool className="w-4 h-4" />
+            <span>Faculty Articles ({articles.length})</span>
           </button>
 
           <button
@@ -1265,7 +1343,201 @@ export const AdminPage: React.FC<AdminPageProps> = ({
           </div>
         )}
 
-        {/* TAB 4: ADMIN ACCOUNTS MANAGEMENT */}
+        {/* TAB 4: FACULTY ARTICLES MANAGEMENT */}
+        {activeTab === 'articles' && (
+          <div className="space-y-6">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold font-serif text-slate-900">
+                    Faculty Columns & Academic Articles
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Manage pedagogical essays and columns authored by LifePrep teachers across all 4 academic categories.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setIsEditingArticle(!isEditingArticle)}
+                  className="px-5 py-2.5 bg-blue-900 hover:bg-blue-800 text-amber-300 font-bold text-xs rounded-xl shadow transition-transform active:scale-95 flex items-center justify-center space-x-2 shrink-0"
+                >
+                  <PenTool className="w-4 h-4" />
+                  <span>{isEditingArticle ? 'Close Form' : 'Write New Article'}</span>
+                </button>
+              </div>
+
+              {/* WRITE NEW ARTICLE FORM */}
+              {isEditingArticle && (
+                <form onSubmit={handleSaveArticle} className="bg-slate-50 p-6 rounded-2xl border border-blue-200 space-y-4">
+                  <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wider flex items-center space-x-2">
+                    <PenTool className="w-4 h-4" />
+                    <span>Publish Faculty Article</span>
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Article Title *</label>
+                      <input
+                        type="text"
+                        required
+                        value={newArticleForm.title || ''}
+                        onChange={(e) => setNewArticleForm({ ...newArticleForm, title: e.target.value })}
+                        placeholder="e.g. Constructivist Science in Secondary School"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Division Category *</label>
+                      <select
+                        value={newArticleForm.division || 'general'}
+                        onChange={(e) => setNewArticleForm({ ...newArticleForm, division: e.target.value as ArticleDivision })}
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                      >
+                        <option value="general">General Pedagogy</option>
+                        <option value="pre-primary">Early Childhood Development (ECD - Nursery to UKG)</option>
+                        <option value="primary">Primary School (Grades 1–5)</option>
+                        <option value="secondary">Secondary School (Grades 6–10)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Author Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={newArticleForm.authorName || ''}
+                        onChange={(e) => setNewArticleForm({ ...newArticleForm, authorName: e.target.value })}
+                        placeholder="e.g. Ms. Saraswati Sharma"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Author Position / Role</label>
+                      <input
+                        type="text"
+                        value={newArticleForm.authorRole || ''}
+                        onChange={(e) => setNewArticleForm({ ...newArticleForm, authorRole: e.target.value })}
+                        placeholder="e.g. Lead Early Childhood Educator"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700">Summary / Excerpt</label>
+                    <input
+                      type="text"
+                      value={newArticleForm.summary || ''}
+                      onChange={(e) => setNewArticleForm({ ...newArticleForm, summary: e.target.value })}
+                      placeholder="A short summary of the article..."
+                      className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700">Article Content *</label>
+                    <textarea
+                      required
+                      rows={5}
+                      value={newArticleForm.content || ''}
+                      onChange={(e) => setNewArticleForm({ ...newArticleForm, content: e.target.value })}
+                      placeholder="Write the full content of the article here..."
+                      className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                    ></textarea>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Cover Image URL</label>
+                      <input
+                        type="url"
+                        value={newArticleForm.coverImage || ''}
+                        onChange={(e) => setNewArticleForm({ ...newArticleForm, coverImage: e.target.value })}
+                        placeholder="https://images.unsplash.com/..."
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Tags (comma separated)</label>
+                      <input
+                        type="text"
+                        value={Array.isArray(newArticleForm.tags) ? newArticleForm.tags.join(', ') : ''}
+                        onChange={(e) => setNewArticleForm({ ...newArticleForm, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                        placeholder="Pedagogy, STEM, Constructivism"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-900 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingArticle(false)}
+                      className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-blue-900 hover:bg-blue-800 text-amber-300 font-bold text-xs rounded-xl shadow"
+                    >
+                      Publish Article Now
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* LIST OF PUBLISHED ARTICLES */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Published Faculty Articles ({articles.length})
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {articles.map((art) => (
+                    <div
+                      key={art.id}
+                      className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between space-y-4 shadow-sm"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900">
+                            {art.division}
+                          </span>
+                          <span className="text-xs text-slate-400">{art.date}</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-900 line-clamp-2">{art.title}</h4>
+                        <p className="text-xs text-slate-600 line-clamp-2">{art.summary}</p>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-slate-900">{art.authorName}</p>
+                          <p className="text-[10px] text-slate-500">{art.authorRole}</p>
+                        </div>
+
+                        <button
+                          onClick={() => handleDeleteArticle(art.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                          title="Delete Article"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: ADMIN ACCOUNTS MANAGEMENT */}
         {activeTab === 'admins' && (
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">

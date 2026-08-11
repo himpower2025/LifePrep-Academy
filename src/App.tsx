@@ -7,6 +7,7 @@ import { AboutPage } from './pages/AboutPage';
 import { AcademicsPage } from './pages/AcademicsPage';
 import { CampusLifePage } from './pages/CampusLifePage';
 import { AdmissionsPage } from './pages/AdmissionsPage';
+import { ArticlesPage } from './pages/ArticlesPage';
 import { AdminPage } from './pages/AdminPage';
 
 import { AdmissionsModal } from './components/modals/AdmissionsModal';
@@ -85,6 +86,14 @@ export default function App() {
               initialSubTab={subTab || 'process'}
               onOpenAdmissionsModal={() => setAdmissionsModalOpen(true)}
               onOpenTourModal={() => setTourModalOpen(true)}
+            />
+          )}
+
+          {currentPage === 'articles' && (
+            <ArticlesPage
+              initialDivision={subTab || 'all'}
+              onOpenAdmissions={() => setAdmissionsModalOpen(true)}
+              onOpenTour={() => setTourModalOpen(true)}
             />
           )}
 
