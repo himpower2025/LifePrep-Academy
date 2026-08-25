@@ -6,12 +6,14 @@ interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigatePage: (page: string, subTab?: string) => void;
+  onOpenTyping?: () => void;
 }
 
 export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
   onNavigatePage,
+  onOpenTyping,
 }) => {
   const [query, setQuery] = useState('');
 
@@ -34,6 +36,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     else if (sectionId === 'academics') onNavigatePage('academics');
     else if (sectionId === 'facilities') onNavigatePage('campus-life', 'facilities');
     else if (sectionId === 'events') onNavigatePage('campus-life', 'news');
+    else if (sectionId === 'articles') onNavigatePage('articles', 'all');
+    else if (sectionId === 'typing') {
+      onClose();
+      if (onOpenTyping) onOpenTyping();
+      return;
+    }
     else onNavigatePage('home');
 
     onClose();

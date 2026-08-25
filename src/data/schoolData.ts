@@ -324,5 +324,7 @@ export const SEARCH_INDEX: SearchResult[] = [
   { id: 's5', title: 'Progressive Pedagogy & Value Education', category: 'Pillars', description: 'Constructivism, story-based pedagogy, and skill-based training.', sectionId: 'pillars' },
   { id: 's6', title: 'Principal Welcome & Educational Vision', category: 'About Us', description: 'Message from Founder Principal Raju Moktan on LPA values.', sectionId: 'about' },
   { id: 's7', title: 'Campus Open House & Tour Scheduling', category: 'Events', description: 'Book a guided tour of our Lalitpur campus.', sectionId: 'events' },
-  { id: 's8', title: 'Extracurricular Clubs & Sports Programs', category: 'Campus Life', description: 'After-school clubs, arts, athletics, and community service.', sectionId: 'facilities' }
+  { id: 's8', title: 'Extracurricular Clubs & Sports Programs', category: 'Campus Life', description: 'After-school clubs, arts, athletics, and community service.', sectionId: 'facilities' },
+  { id: 's9', title: 'English Typing Practice & Keyboarding Hub', category: 'Student Tools', description: '100% free touch typing lessons, speed tests, and practice games with zero login needed.', sectionId: 'typing' },
+  { id: 's10', title: 'Faculty & Educator Articles', category: 'Articles', description: 'Scholarly essays and educational columns by LPA teachers across all divisions.', sectionId: 'articles' }
 ];

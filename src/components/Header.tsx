@@ -17,7 +17,8 @@ import {
   Building2,
   FileText,
   ShieldCheck,
-  PenTool
+  PenTool,
+  Keyboard
 } from 'lucide-react';
 import { SCHOOL_INFO } from '../data/schoolData';
 
@@ -27,6 +28,7 @@ interface HeaderProps {
   onOpenAdmissions: () => void;
   onOpenTour: () => void;
   onOpenSearch: () => void;
+  onOpenTyping: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAdmissions,
   onOpenTour,
   onOpenSearch,
+  onOpenTyping,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -101,6 +104,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="flex items-center space-x-4">
             <button
+              onClick={onOpenTyping}
+              className="bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wide uppercase border border-amber-400/40 flex items-center space-x-1.5 transition-all shadow-2xs"
+              title="Free English Typing Practice for Students (No Login Required)"
+            >
+              <Keyboard className="w-3.5 h-3.5 text-amber-300" />
+              <span>English Typing (Free)</span>
+            </button>
+            <span className="text-blue-800/80">|</span>
+            <button
               onClick={() => handleNavSelection('campus-life', 'news')}
               className="text-blue-100 hover:text-amber-300 transition-colors flex items-center space-x-1"
             >
@@ -118,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-blue-800/80">|</span>
             <button
               onClick={() => handleNavSelection('admin')}
-              className="bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wide uppercase border border-amber-400/40 flex items-center space-x-1 transition-all"
+              className="bg-blue-800/60 hover:bg-blue-700/60 text-blue-200 px-2.5 py-0.5 rounded-full font-bold text-[10px] tracking-wide uppercase border border-blue-700/50 flex items-center space-x-1 transition-all"
               title="School Admin Portal (Popups & Academic Calendar)"
             >
               <ShieldCheck className="w-3 h-3 text-amber-300" />
@@ -260,6 +272,23 @@ export const Header: React.FC<HeaderProps> = ({
                         Grades 6–10
                       </span>
                     </button>
+                    <div className="border-t border-slate-100 mt-1 pt-1">
+                      <button
+                        onClick={() => {
+                          setActiveDropdown(null);
+                          onOpenTyping();
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-blue-950 hover:bg-amber-50 hover:text-amber-900 flex items-center justify-between group"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Keyboard className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                          <span>English Typing Practice</span>
+                        </div>
+                        <span className="text-[9px] bg-amber-200 text-amber-950 font-extrabold px-1.5 py-0.5 rounded uppercase">
+                          No Login
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -307,6 +336,23 @@ export const Header: React.FC<HeaderProps> = ({
                       <Calendar className="w-4 h-4 text-blue-900" />
                       <span>News & Open House Events</span>
                     </button>
+                    <div className="border-t border-slate-100 mt-1 pt-1">
+                      <button
+                        onClick={() => {
+                          setActiveDropdown(null);
+                          onOpenTyping();
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-blue-950 hover:bg-amber-50 hover:text-amber-900 flex items-center justify-between group"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Keyboard className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                          <span>Student Typing Hub</span>
+                        </div>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded uppercase">
+                          Free
+                        </span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -670,6 +716,17 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenTyping();
+                }}
+                className="w-full py-2.5 text-xs font-extrabold bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 rounded-xl flex items-center justify-center space-x-2 shadow-sm"
+              >
+                <Keyboard className="w-4 h-4 text-slate-950" />
+                <span>English Typing Practice (Free • No Login)</span>
+              </button>
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

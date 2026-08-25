@@ -14,6 +14,7 @@ import { AdmissionsModal } from './components/modals/AdmissionsModal';
 import { TourModal } from './components/modals/TourModal';
 import { SearchModal } from './components/modals/SearchModal';
 import { FacilityDetailModal } from './components/modals/FacilityDetailModal';
+import { TypingPracticeModal } from './components/modals/TypingPracticeModal';
 import { PopupsDisplay } from './components/PopupsDisplay';
 
 import { CampusFacility } from './types';
@@ -25,6 +26,7 @@ export default function App() {
   const [admissionsModalOpen, setAdmissionsModalOpen] = useState(false);
   const [tourModalOpen, setTourModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [typingModalOpen, setTypingModalOpen] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState<CampusFacility | null>(null);
 
   const handleNavigatePage = (page: string, targetSubTab?: string) => {
@@ -43,6 +45,7 @@ export default function App() {
           onOpenAdmissions={() => setAdmissionsModalOpen(true)}
           onOpenTour={() => setTourModalOpen(true)}
           onOpenSearch={() => setSearchModalOpen(true)}
+          onOpenTyping={() => setTypingModalOpen(true)}
         />
 
         {/* Dynamic Page Router */}
@@ -53,6 +56,7 @@ export default function App() {
               onOpenTour={() => setTourModalOpen(true)}
               onNavigatePage={handleNavigatePage}
               onSelectFacility={(facility) => setSelectedFacility(facility)}
+              onOpenTyping={() => setTypingModalOpen(true)}
             />
           )}
 
@@ -69,6 +73,7 @@ export default function App() {
               initialSubTab={subTab || 'overview'}
               onOpenAdmissions={() => setAdmissionsModalOpen(true)}
               onOpenTour={() => setTourModalOpen(true)}
+              onOpenTyping={() => setTypingModalOpen(true)}
             />
           )}
 
@@ -78,6 +83,7 @@ export default function App() {
               onSelectFacility={(facility) => setSelectedFacility(facility)}
               onOpenTour={() => setTourModalOpen(true)}
               onOpenAdmissions={() => setAdmissionsModalOpen(true)}
+              onOpenTyping={() => setTypingModalOpen(true)}
             />
           )}
 
@@ -112,6 +118,7 @@ export default function App() {
         onOpenAdmissions={() => setAdmissionsModalOpen(true)}
         onOpenTour={() => setTourModalOpen(true)}
         onNavigatePage={handleNavigatePage}
+        onOpenTyping={() => setTypingModalOpen(true)}
       />
 
       {/* Active School Popups for Website Visitors */}
@@ -135,12 +142,18 @@ export default function App() {
         isOpen={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onNavigatePage={handleNavigatePage}
+        onOpenTyping={() => setTypingModalOpen(true)}
       />
 
       <FacilityDetailModal
         facility={selectedFacility}
         onClose={() => setSelectedFacility(null)}
         onOpenTour={() => setTourModalOpen(true)}
+      />
+
+      <TypingPracticeModal
+        isOpen={typingModalOpen}
+        onClose={() => setTypingModalOpen(false)}
       />
     </div>
   );

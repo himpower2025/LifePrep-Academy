@@ -8,7 +8,9 @@ import {
   Sparkles,
   MapPin,
   Clock,
-  BookOpen
+  BookOpen,
+  Keyboard,
+  ExternalLink
 } from 'lucide-react';
 import { CAMPUS_FACILITIES, LATEST_NEWS, UPCOMING_EVENTS } from '../data/schoolData';
 import { CampusFacility, NewsArticle } from '../types';
@@ -18,6 +20,7 @@ interface CampusLifePageProps {
   onSelectFacility: (facility: CampusFacility) => void;
   onOpenTour: () => void;
   onOpenAdmissions: () => void;
+  onOpenTyping?: () => void;
 }
 
 export const CampusLifePage: React.FC<CampusLifePageProps> = ({
@@ -25,6 +28,7 @@ export const CampusLifePage: React.FC<CampusLifePageProps> = ({
   onSelectFacility,
   onOpenTour,
   onOpenAdmissions,
+  onOpenTyping,
 }) => {
   const [activeTab, setActiveTab] = useState<string>(initialSubTab);
 
@@ -100,6 +104,52 @@ export const CampusLifePage: React.FC<CampusLifePageProps> = ({
 
       {/* Main Tab Content */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Student Digital Tools & Typing Banner */}
+        <div className="mb-8 bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white border border-blue-800/80 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center space-x-2 bg-amber-400/20 text-amber-300 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
+              <Keyboard className="w-3.5 h-3.5 text-amber-300" />
+              <span>Digital Literacy & Practice Hub</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+              Student English Typing Practice Zone
+            </h3>
+            <p className="text-xs sm:text-sm text-blue-100 leading-relaxed font-normal">
+              Empowering students from Nursery to Grade 10 to build touch-typing muscle memory, speed, and accuracy. 100% free with zero login or account required.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {onOpenTyping && (
+              <button
+                onClick={onOpenTyping}
+                className="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-transform active:scale-98 flex items-center space-x-2"
+              >
+                <Keyboard className="w-4 h-4 text-slate-950" />
+                <span>Open Typing Hub</span>
+              </button>
+            )}
+            <a
+              href="https://www.typingclub.com/sportal/program-3.game"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition-colors flex items-center space-x-1.5"
+            >
+              <span>TypingClub</span>
+              <ExternalLink className="w-3.5 h-3.5 text-blue-200" />
+            </a>
+            <a
+              href="https://monkeytype.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition-colors flex items-center space-x-1.5"
+            >
+              <span>Monkeytype</span>
+              <ExternalLink className="w-3.5 h-3.5 text-blue-200" />
+            </a>
+          </div>
+        </div>
+
         {activeTab === 'facilities' && (
           <div className="space-y-8">
             <div className="max-w-2xl space-y-2">

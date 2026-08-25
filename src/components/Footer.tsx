@@ -9,7 +9,8 @@ import {
   CheckCircle2,
   ExternalLink,
   ShieldCheck,
-  Award
+  Award,
+  Keyboard
 } from 'lucide-react';
 import { SCHOOL_INFO } from '../data/schoolData';
 
@@ -17,12 +18,14 @@ interface FooterProps {
   onOpenAdmissions: () => void;
   onOpenTour: () => void;
   onNavigatePage: (page: string, subTab?: string) => void;
+  onOpenTyping: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   onOpenAdmissions,
   onOpenTour,
   onNavigatePage,
+  onOpenTyping,
 }) => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
@@ -135,9 +138,18 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Column 3: Quick Portals & Visit */}
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider font-serif">
-              Admissions & Visit
+              Student & Admissions
             </h4>
             <ul className="space-y-2 text-xs text-blue-50 font-medium">
+              <li>
+                <button
+                  onClick={onOpenTyping}
+                  className="text-amber-300 hover:text-amber-200 font-bold flex items-center space-x-1.5 transition-colors group"
+                >
+                  <Keyboard className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span>English Typing Practice (Free)</span>
+                </button>
+              </li>
               <li>
                 <button onClick={() => handlePageClick('admissions', 'process')} className="hover:text-amber-300 transition-colors font-semibold">
                   5-Step Application Process

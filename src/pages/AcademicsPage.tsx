@@ -8,7 +8,9 @@ import {
   ArrowRight,
   Download,
   Award,
-  Users
+  Users,
+  Keyboard,
+  ExternalLink
 } from 'lucide-react';
 import { ACADEMIC_DIVISIONS, SCHOOL_INFO } from '../data/schoolData';
 import { AcademicStage } from '../types';
@@ -17,12 +19,14 @@ interface AcademicsPageProps {
   initialSubTab?: string;
   onOpenAdmissions: () => void;
   onOpenTour: () => void;
+  onOpenTyping?: () => void;
 }
 
 export const AcademicsPage: React.FC<AcademicsPageProps> = ({
   initialSubTab = 'overview',
   onOpenAdmissions,
   onOpenTour,
+  onOpenTyping,
 }) => {
   const [activeStage, setActiveStage] = useState<string>(
     initialSubTab === 'overview' ? 'pre-primary' : initialSubTab
@@ -162,6 +166,45 @@ export const AcademicsPage: React.FC<AcademicsPageProps> = ({
                 Maintaining an 8:1 student-teacher ratio ensures personalized learning plans and individual academic growth.
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Digital Skills & English Typing Feature Card */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-100 rounded-3xl p-6 sm:p-8 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center space-x-2 bg-blue-900 text-amber-300 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+              <Keyboard className="w-3.5 h-3.5 text-amber-300" />
+              <span>Foundational Digital Literacy</span>
+            </div>
+            <h3 className="text-xl font-bold font-serif text-slate-900">
+              English Touch Typing & Keyboarding Program
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+              Integrated across all grades from ECD to Grade 10 to prepare students for computer-based assessments, scientific research, and professional digital fluency. Open 24/7 with zero login needed.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {onOpenTyping && (
+              <button
+                onClick={onOpenTyping}
+                className="px-5 py-3 bg-blue-900 hover:bg-blue-800 text-amber-300 font-bold text-xs rounded-xl shadow transition-colors flex items-center space-x-2"
+              >
+                <Keyboard className="w-4 h-4 text-amber-300" />
+                <span>Open Typing Hub (Free)</span>
+              </button>
+            )}
+            <a
+              href="https://www.typingclub.com/sportal/program-3.game"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 shadow-xs transition-colors flex items-center space-x-1.5"
+            >
+              <span>TypingClub</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </a>
           </div>
         </div>
       </div>

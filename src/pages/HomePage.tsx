@@ -13,7 +13,9 @@ import {
   Calendar,
   Users,
   Building2,
-  GraduationCap
+  GraduationCap,
+  Keyboard,
+  ExternalLink
 } from 'lucide-react';
 import {
   SCHOOL_INFO,
@@ -31,6 +33,7 @@ interface HomePageProps {
   onOpenTour: () => void;
   onNavigatePage: (page: string, subTab?: string) => void;
   onSelectFacility: (facility: CampusFacility) => void;
+  onOpenTyping?: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -38,6 +41,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   onOpenTour,
   onNavigatePage,
   onSelectFacility,
+  onOpenTyping,
 }) => {
   return (
     <div className="space-y-16 sm:space-y-24 pb-12">
@@ -385,6 +389,30 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Student Quick Tools Banner */}
+        <div className="bg-gradient-to-r from-blue-900 to-indigo-950 rounded-2xl p-5 sm:p-6 text-white border border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-amber-400/20 text-amber-300 rounded-xl border border-amber-400/30">
+              <Keyboard className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-300">Student Learning Resource</p>
+              <h4 className="text-sm sm:text-base font-bold text-white">English Touch Typing Practice (Free • No Login)</h4>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {onOpenTyping && (
+              <button
+                onClick={onOpenTyping}
+                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs flex items-center space-x-1.5"
+              >
+                <span>Launch Typing Hub</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
