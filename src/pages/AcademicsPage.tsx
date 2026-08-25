@@ -172,39 +172,35 @@ export const AcademicsPage: React.FC<AcademicsPageProps> = ({
 
       {/* Digital Skills & English Typing Feature Card */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-slate-100 rounded-3xl p-6 sm:p-8 border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center space-x-2 bg-blue-900 text-amber-300 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-              <Keyboard className="w-3.5 h-3.5 text-amber-300" />
-              <span>Foundational Digital Literacy</span>
+        <div className="bg-slate-100 rounded-2xl p-5 sm:p-6 border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center space-x-1">
+                <Keyboard className="w-3.5 h-3.5" />
+                <span>Digital Skills</span>
+              </span>
+              <span className="text-[10px] bg-amber-100 text-amber-900 font-extrabold px-1.5 py-0.5 rounded uppercase">
+                Free • All Grades
+              </span>
             </div>
-            <h3 className="text-xl font-bold font-serif text-slate-900">
-              English Touch Typing & Keyboarding Program
+            <h3 className="text-lg font-bold font-serif text-slate-900">
+              English Touch Typing Practice
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-              Integrated across all grades from ECD to Grade 10 to prepare students for computer-based assessments, scientific research, and professional digital fluency. Open 24/7 with zero login needed.
+            <p className="text-xs text-slate-600 font-normal">
+              Touch-typing lessons and speed benchmarks for students with zero login required.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center space-x-2 shrink-0">
             {onOpenTyping && (
               <button
                 onClick={onOpenTyping}
-                className="px-5 py-3 bg-blue-900 hover:bg-blue-800 text-amber-300 font-bold text-xs rounded-xl shadow transition-colors flex items-center space-x-2"
+                className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-amber-300 font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center space-x-1.5"
               >
-                <Keyboard className="w-4 h-4 text-amber-300" />
-                <span>Open Typing Hub (Free)</span>
+                <Keyboard className="w-3.5 h-3.5 text-amber-300" />
+                <span>Open Typing Hub</span>
               </button>
             )}
-            <a
-              href="https://www.typingclub.com/sportal/program-3.game"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-3 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 shadow-xs transition-colors flex items-center space-x-1.5"
-            >
-              <span>TypingClub</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-            </a>
           </div>
         </div>
       </div>
