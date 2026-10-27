@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
-  Layers,
+  Megaphone,
   Calendar,
-  FileText,
-  PenTool,
+  Newspaper,
+  BookOpen,
   Users,
   Search,
   Plus,
-  Edit,
+  Edit3,
   Trash2,
   Eye,
-  CheckCircle,
-  XCircle,
+  CheckCircle2,
   Clock,
   MapPin,
   Upload,
@@ -22,11 +21,16 @@ import {
   Mail,
   Lock,
   ArrowRight,
-  Filter,
   Check,
   X,
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  ChevronRight,
+  Info,
+  RefreshCw,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { PopupItem, PopupType, EventItem, NewsArticle, EducatorArticle, ArticleDivision } from '../types';
 import {
@@ -65,6 +69,16 @@ const saveStoredAllowedEmails = (emails: string[]) => {
   }
 };
 
+// Preset photo options to help non-technical school staff easily pick lovely school imagery
+const SAMPLE_IMAGE_PRESETS = [
+  { label: 'Campus & Architecture', url: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Science & Robotics Lab', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80' },
+  { label: 'Classroom & Teachers', url: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Early Years (Play-Based)', url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Library & Reading Hub', url: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=80' },
+  { label: 'Sports & Outdoor Athletics', url: 'https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=1200&q=80' }
+];
+
 interface AdminPageProps {
   onOpenAdmissions: () => void;
   onOpenTour: () => void;
@@ -76,21 +90,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   onOpenTour,
   onNavigateHome
 }) => {
-  // Auth state
+  // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [emailInput, setEmailInput] = useState<string>('');
   const [pinInput, setPinInput] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  // Authorized Admin Emails State
+  // Allowed Staff Access List
   const [allowedEmails, setAllowedEmails] = useState<string[]>(['rajumoktan@gmail.com']);
   const [newAdminEmailInput, setNewAdminEmailInput] = useState<string>('');
 
-  // Active admin tab: 'popups' | 'events' | 'news' | 'articles' | 'admins'
+  // Active workspace tab
   const [activeTab, setActiveTab] = useState<'popups' | 'events' | 'news' | 'articles' | 'admins'>('popups');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [showQuickGuide, setShowQuickGuide] = useState<boolean>(true);
+  const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
 
-  // Popup Management States
+  // Popups Management
   const [popups, setPopups] = useState<PopupItem[]>([]);
   const [isEditingPopup, setIsEditingPopup] = useState<boolean>(false);
   const [currentPopupForm, setCurrentPopupForm] = useState<Partial<PopupItem>>({
@@ -110,12 +126,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   });
   const [previewPopup, setPreviewPopup] = useState<PopupItem | null>(null);
 
-  // Events Management States
+  // Events Management
   const [events, setEvents] = useState<EventItem[]>([]);
   const [isEditingEvent, setIsEditingEvent] = useState<boolean>(false);
   const [newEventForm, setNewEventForm] = useState<Partial<EventItem>>({
     title: '',
-    date: '',
+    date: '2026.09.15',
     month: 'SEP',
     day: '15',
     time: '09:00 AM ~ 12:00 PM',
@@ -124,7 +140,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     description: ''
   });
 
-  // News Management States
+  // News Management
   const [newsList, setNewsList] = useState<NewsArticle[]>([]);
   const [isEditingNews, setIsEditingNews] = useState<boolean>(false);
   const [newNewsForm, setNewNewsForm] = useState<Partial<NewsArticle>>({
@@ -137,7 +153,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1000&q=80'
   });
 
-  // Articles Management States
+  // Educator Articles Management
   const [articles, setArticles] = useState<EducatorArticle[]>([]);
   const [isEditingArticle, setIsEditingArticle] = useState<boolean>(false);
   const [newArticleForm, setNewArticleForm] = useState<Partial<EducatorArticle>>({
@@ -165,7 +181,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setAllowedEmails(getStoredAllowedEmails());
   }, []);
 
-  // LOGIN HANDLER
+  const triggerToast = (msg: string) => {
+    setFeedbackToast(msg);
+    setTimeout(() => {
+      setFeedbackToast(null);
+    }, 3800);
+  };
+
+  // Sign in handler
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -174,16 +197,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     const cleanPin = pinInput.trim();
 
     const currentAllowed = getStoredAllowedEmails();
-    const isAllowedEmail = currentAllowed.some((e) => e.toLowerCase() === cleanEmail);
+    const isAllowedEmail = currentAllowed.some((em) => em.toLowerCase() === cleanEmail);
 
     if (!isAllowedEmail) {
-      setAuthError('Unauthorized email address. Only authorized school staff can sign in.');
+      setAuthError('This email is not listed on the staff access list. Please check your spelling or contact the principal.');
       return;
     }
 
-    // Default PIN: 1234 or school default 2026
     if (cleanPin !== '1234' && cleanPin !== '2026') {
-      setAuthError('Incorrect Password/PIN. Please contact the principal office.');
+      setAuthError('Incorrect Security PIN. School default is 1234 or 2026.');
       return;
     }
 
@@ -198,14 +220,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setIsAuthenticated(false);
   };
 
-  // ADMIN EMAILS HANDLERS
+  // Staff Email Access Handlers
   const handleAddAdminEmail = (e: React.FormEvent) => {
     e.preventDefault();
     const target = newAdminEmailInput.trim().toLowerCase();
-    if (!target || !target.includes('@')) return;
+    if (!target || !target.includes('@')) {
+      alert('Please enter a valid email address.');
+      return;
+    }
 
-    if (allowedEmails.some((e) => e.toLowerCase() === target)) {
-      alert('This email address is already granted admin permission.');
+    if (allowedEmails.some((em) => em.toLowerCase() === target)) {
+      alert('This email address already has administrative access.');
       return;
     }
 
@@ -213,39 +238,45 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     setAllowedEmails(updated);
     saveStoredAllowedEmails(updated);
     setNewAdminEmailInput('');
+    triggerToast(`Added ${target} to authorized staff access.`);
   };
 
   const handleRemoveAdminEmail = (emailToRemove: string) => {
     if (emailToRemove.toLowerCase() === 'rajumoktan@gmail.com') {
-      alert('The primary principal email cannot be removed.');
+      alert('The primary principal email cannot be removed to prevent lockout.');
       return;
     }
-    if (confirm(`Remove administrator access for: ${emailToRemove}?`)) {
-      const updated = allowedEmails.filter((e) => e.toLowerCase() !== emailToRemove.toLowerCase());
+    if (window.confirm(`Revoke administrator access for ${emailToRemove}?`)) {
+      const updated = allowedEmails.filter((em) => em.toLowerCase() !== emailToRemove.toLowerCase());
       setAllowedEmails(updated);
       saveStoredAllowedEmails(updated);
+      triggerToast(`Removed ${emailToRemove} from staff access.`);
     }
   };
 
   // POPUP ACTIONS
   const handleTogglePopupStatus = (id: string) => {
+    const target = popups.find((p) => p.id === id);
     const updated = popups.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p));
     setPopups(updated);
     saveStoredPopups(updated);
+    const newState = target ? !target.isActive : false;
+    triggerToast(newState ? 'Notice is now LIVE on the website.' : 'Notice is now HIDDEN from the website.');
   };
 
   const handleDeletePopup = (id: string) => {
-    if (confirm('Are you sure you want to delete this popup?')) {
+    if (window.confirm('Are you sure you want to delete this notice?')) {
       const updated = popups.filter((p) => p.id !== id);
       setPopups(updated);
       saveStoredPopups(updated);
+      triggerToast('Notice deleted successfully.');
     }
   };
 
   const handleSavePopupForm = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentPopupForm.title) {
-      alert('Please enter a popup title.');
+    if (!currentPopupForm.title?.trim()) {
+      alert('Please enter a headline or title for this notice.');
       return;
     }
 
@@ -257,19 +288,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     } else {
       const newItem: PopupItem = {
         id: `popup-${Date.now()}`,
-        title: currentPopupForm.title || 'New Announcement',
+        title: currentPopupForm.title.trim(),
         popupType: currentPopupForm.popupType || 'template',
         isActive: currentPopupForm.isActive ?? true,
-        tagline: currentPopupForm.tagline,
-        dateTime: currentPopupForm.dateTime,
-        location: currentPopupForm.location,
-        targetAudience: currentPopupForm.targetAudience,
-        description: currentPopupForm.description,
-        ctaText: currentPopupForm.ctaText,
+        tagline: currentPopupForm.tagline || 'Admissions & Open House',
+        dateTime: currentPopupForm.dateTime || '',
+        location: currentPopupForm.location || 'Life-Prep Academy Campus',
+        targetAudience: currentPopupForm.targetAudience || 'Parents & Students',
+        description: currentPopupForm.description || '',
+        ctaText: currentPopupForm.ctaText || 'Apply for Admissions Online',
         ctaAction: currentPopupForm.ctaAction || 'admissions',
-        ctaUrl: currentPopupForm.ctaUrl,
+        ctaUrl: currentPopupForm.ctaUrl || '',
         themeStyle: currentPopupForm.themeStyle || 'blue-gold',
-        imageUrl: currentPopupForm.imageUrl,
+        imageUrl: currentPopupForm.imageUrl || '',
         imageAlt: currentPopupForm.imageAlt || currentPopupForm.title,
         clickUrl: currentPopupForm.clickUrl || 'admissions',
         badgeText: currentPopupForm.badgeText || 'NOTICE',
@@ -282,6 +313,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     saveStoredPopups(updatedList);
     setIsEditingPopup(false);
     resetPopupForm();
+    triggerToast('Notice saved! It is now updated on the website.');
   };
 
   const resetPopupForm = () => {
@@ -291,8 +323,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       title: '',
       tagline: 'Admissions & Open House',
       dateTime: '',
-      location: '',
-      targetAudience: '',
+      location: 'Life-Prep Academy Campus, Lalitpur',
+      targetAudience: 'Prospective Students & Parents',
       description: '',
       ctaText: 'Apply for Admissions Online',
       ctaAction: 'admissions',
@@ -319,7 +351,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   // EVENT ACTIONS
   const handleSaveEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEventForm.title) return;
+    if (!newEventForm.title?.trim()) {
+      alert('Please enter an event title.');
+      return;
+    }
 
     let updated: EventItem[];
     if (newEventForm.id) {
@@ -329,12 +364,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     } else {
       const newItem: EventItem = {
         id: `evt-${Date.now()}`,
-        title: newEventForm.title || '',
-        date: newEventForm.date || '2026.08.30',
+        title: newEventForm.title.trim(),
+        date: newEventForm.date || '2026.09.15',
         month: (newEventForm.month || 'SEP').toUpperCase(),
         day: newEventForm.day || '15',
         time: newEventForm.time || '10:00 AM',
-        location: newEventForm.location || 'LPA Campus',
+        location: newEventForm.location || 'LPA Campus, Lalitpur',
         category: newEventForm.category || 'Academics',
         description: newEventForm.description || ''
       };
@@ -345,12 +380,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     saveStoredEvents(updated);
     setIsEditingEvent(false);
     resetEventForm();
+    triggerToast('School event saved successfully.');
   };
 
   const resetEventForm = () => {
     setNewEventForm({
       title: '',
-      date: '',
+      date: '2026.09.15',
       month: 'SEP',
       day: '15',
       time: '09:00 AM ~ 12:00 PM',
@@ -361,17 +397,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   };
 
   const handleDeleteEvent = (id: string) => {
-    if (confirm('Are you sure you want to delete this event?')) {
+    if (window.confirm('Are you sure you want to remove this school event?')) {
       const updated = events.filter((e) => e.id !== id);
       setEvents(updated);
       saveStoredEvents(updated);
+      triggerToast('Event deleted.');
     }
   };
 
   // NEWS ACTIONS
   const handleSaveNews = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNewsForm.title) return;
+    if (!newNewsForm.title?.trim()) {
+      alert('Please enter a headline for this news story.');
+      return;
+    }
 
     let updated: NewsArticle[];
     if (newNewsForm.id) {
@@ -381,7 +421,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     } else {
       const newItem: NewsArticle = {
         id: `news-${Date.now()}`,
-        title: newNewsForm.title || '',
+        title: newNewsForm.title.trim(),
         category: newNewsForm.category || 'Campus Life',
         date: newNewsForm.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
         readTime: newNewsForm.readTime || '3 min read',
@@ -396,6 +436,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     saveStoredNews(updated);
     setIsEditingNews(false);
     resetNewsForm();
+    triggerToast('Campus news article published.');
   };
 
   const resetNewsForm = () => {
@@ -411,17 +452,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   };
 
   const handleDeleteNews = (id: string) => {
-    if (confirm('Are you sure you want to delete this news article?')) {
+    if (window.confirm('Are you sure you want to delete this news article?')) {
       const updated = newsList.filter((n) => n.id !== id);
       setNewsList(updated);
       saveStoredNews(updated);
+      triggerToast('News article deleted.');
     }
   };
 
   // ARTICLE ACTIONS
   const handleSaveArticle = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newArticleForm.title || !newArticleForm.authorName) return;
+    if (!newArticleForm.title?.trim() || !newArticleForm.authorName?.trim()) {
+      alert('Please provide both an article title and author name.');
+      return;
+    }
 
     let updated: EducatorArticle[];
     if (newArticleForm.id) {
@@ -431,9 +476,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     } else {
       const newItem: EducatorArticle = {
         id: `art-${Date.now()}`,
-        title: newArticleForm.title || '',
-        authorName: newArticleForm.authorName || 'Educator',
-        authorRole: newArticleForm.authorRole || 'Faculty Lead',
+        title: newArticleForm.title.trim(),
+        authorName: newArticleForm.authorName.trim(),
+        authorRole: newArticleForm.authorRole || 'Faculty Educator',
         authorAvatar: newArticleForm.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
         division: newArticleForm.division || 'general',
         date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -451,6 +496,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     saveStoredArticles(updated);
     setIsEditingArticle(false);
     resetArticleForm();
+    triggerToast('Faculty column updated.');
   };
 
   const resetArticleForm = () => {
@@ -467,20 +513,22 @@ export const AdminPage: React.FC<AdminPageProps> = ({
   };
 
   const handleDeleteArticle = (id: string) => {
-    if (confirm('Are you sure you want to delete this faculty article?')) {
+    if (window.confirm('Are you sure you want to delete this faculty column?')) {
       const updated = articles.filter((a) => a.id !== id);
       setArticles(updated);
       saveStoredArticles(updated);
+      triggerToast('Article deleted.');
     }
   };
 
-  // Quick stats calculations
+  // Counts
   const activePopupsCount = popups.filter((p) => p.isActive).length;
 
-  // Filtered lists based on search
+  // Search filter
   const filteredPopups = popups.filter((p) =>
     p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.tagline && p.tagline.toLowerCase().includes(searchQuery.toLowerCase()))
+    (p.tagline && p.tagline.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (p.location && p.location.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   const filteredEvents = events.filter((e) =>
     e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -500,40 +548,46 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     em.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // 1. LOGIN SCREEN
+  // 1. SIGN IN SCREEN (Warm, friendly, accessible)
   if (!isAuthenticated) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4 bg-slate-100 font-sans">
+      <div className="min-h-[85vh] flex items-center justify-center p-4 bg-slate-100 font-sans">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-slate-200 text-center space-y-6">
-          <div className="w-14 h-14 bg-slate-900 rounded-xl flex items-center justify-center mx-auto text-amber-400 shadow-sm">
-            <ShieldCheck className="w-7 h-7" />
+          <div className="w-16 h-16 bg-blue-900 text-amber-400 rounded-2xl flex items-center justify-center mx-auto shadow-md">
+            <ShieldCheck className="w-9 h-9" />
           </div>
 
           <div>
-            <h2 className="text-xl font-bold font-serif text-slate-900">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 bg-blue-50 px-2.5 py-1 rounded-full">
+              Staff & Administrator Portal
+            </span>
+            <h2 className="text-2xl font-bold font-serif text-slate-900 mt-2">
               Life-Prep Academy
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Administrator Management Portal
+              Easy, safe website management for teachers and school staff
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Staff Email
+                School Staff Email
               </label>
               <div className="relative">
                 <input
                   type="email"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="admin@lpanc.edu.np"
-                  className="w-full px-4 py-2.5 pl-10 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  placeholder="rajumoktan@gmail.com"
+                  className="w-full px-4 py-2.5 pl-10 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
                   autoFocus
                 />
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Tip: Default authorized email is <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-700">rajumoktan@gmail.com</code>
+              </p>
             </div>
 
             <div>
@@ -545,15 +599,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                   type="password"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2.5 pl-10 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  placeholder="Default PIN: 1234 or 2026"
+                  className="w-full px-4 py-2.5 pl-10 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Enter the school staff PIN: <strong className="text-slate-600">1234</strong> or <strong className="text-slate-600">2026</strong>
+              </p>
             </div>
 
             {authError && (
-              <div className="p-3 bg-red-50 text-red-700 rounded-lg text-xs flex items-center space-x-2 border border-red-200">
+              <div className="p-3 bg-red-50 text-red-700 rounded-xl text-xs flex items-center space-x-2 border border-red-200">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{authError}</span>
               </div>
@@ -561,1072 +618,1407 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg shadow transition-colors"
+              className="w-full py-3 bg-blue-950 hover:bg-blue-900 text-white font-bold text-sm rounded-xl shadow-md transition-colors flex items-center justify-center space-x-2"
             >
-              Sign In to Admin Portal
+              <span>Sign In to Admin Workspace</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <button
-            onClick={onNavigateHome}
-            className="text-xs text-slate-500 hover:text-slate-800 underline block mx-auto"
-          >
-            ← Return to Main Website
-          </button>
+          <div className="pt-2 border-t border-slate-100">
+            <button
+              onClick={onNavigateHome}
+              className="text-xs font-medium text-slate-500 hover:text-slate-800 underline inline-flex items-center space-x-1"
+            >
+              <span>← Return to Public Website</span>
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // 2. LOGGED IN ADMIN DASHBOARD (Clean, Reader-Friendly Workspace)
-  const currentAdminEmail = sessionStorage.getItem('lpa_admin_email') || emailInput || 'Admin';
+  // 2. MAIN ADMIN DASHBOARD (Reader-Friendly, Intuitive, No Developer Jargon)
+  const currentAdminEmail = sessionStorage.getItem('lpa_admin_email') || emailInput || 'Staff Member';
 
-  const menuItems = [
+  const menuSections = [
     {
       id: 'popups' as const,
-      name: 'Popup Notices',
-      subtitle: 'Website alert popups & posters',
-      icon: Layers,
+      title: 'Homepage Notices & Popups',
+      description: 'Announcement posters and alert popups shown to visitors on the website',
+      icon: Megaphone,
       count: popups.length,
-      badge: `${activePopupsCount} Active`
+      statusLabel: `${activePopupsCount} Live on Website`,
+      statusColor: activePopupsCount > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600',
+      actionLabel: '+ Add Notice',
+      onAction: () => {
+        resetPopupForm();
+        setIsEditingPopup(true);
+      }
     },
     {
       id: 'events' as const,
-      name: 'Academic Calendar',
-      subtitle: 'Exams, terms & school events',
+      title: 'School Events & Calendar',
+      description: 'Exam schedules, term dates, sports days, and parent-teacher meetings',
       icon: Calendar,
       count: events.length,
-      badge: `${events.length} Scheduled`
+      statusLabel: `${events.length} Scheduled`,
+      statusColor: 'bg-blue-100 text-blue-900',
+      actionLabel: '+ Add Event',
+      onAction: () => {
+        resetEventForm();
+        setIsEditingEvent(true);
+      }
     },
     {
       id: 'news' as const,
-      name: 'Campus News',
-      subtitle: 'School news & press releases',
-      icon: FileText,
+      title: 'School News & Stories',
+      description: 'Student achievements, campus activities, awards, and community updates',
+      icon: Newspaper,
       count: newsList.length,
-      badge: `${newsList.length} Published`
+      statusLabel: `${newsList.length} Published`,
+      statusColor: 'bg-indigo-100 text-indigo-900',
+      actionLabel: '+ Write Story',
+      onAction: () => {
+        resetNewsForm();
+        setIsEditingNews(true);
+      }
     },
     {
       id: 'articles' as const,
-      name: 'Faculty Columns',
-      subtitle: 'Educator essays & pedagogy',
-      icon: PenTool,
+      title: 'Teacher Insights & Columns',
+      description: 'Pedagogical essays and thought leadership authored by Life-Prep educators',
+      icon: BookOpen,
       count: articles.length,
-      badge: `${articles.length} Articles`
+      statusLabel: `${articles.length} Columns`,
+      statusColor: 'bg-amber-100 text-amber-900',
+      actionLabel: '+ New Article',
+      onAction: () => {
+        resetArticleForm();
+        setIsEditingArticle(true);
+      }
     },
     {
       id: 'admins' as const,
-      name: 'Staff Permissions',
-      subtitle: 'Authorized administrator emails',
+      title: 'Authorized Staff Access',
+      description: 'Manage which teacher and staff emails are allowed to sign in and update the site',
       icon: Users,
       count: allowedEmails.length,
-      badge: `${allowedEmails.length} Authorized`
+      statusLabel: `${allowedEmails.length} Authorized`,
+      statusColor: 'bg-slate-100 text-slate-700',
+      actionLabel: 'Manage Access',
+      onAction: () => {
+        setActiveTab('admins');
+      }
     }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans pb-16">
+    <div className="min-h-screen bg-slate-50 font-sans pb-20">
+      {/* Toast Feedback Notification */}
+      {feedbackToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700 animate-fade-in">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span className="text-xs font-medium">{feedbackToast}</span>
+          <button
+            onClick={() => setFeedbackToast(null)}
+            className="text-slate-400 hover:text-white ml-2 text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Top Navbar */}
-      <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 bg-amber-400 text-slate-950 rounded-lg flex items-center justify-center font-bold">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-10 h-10 bg-blue-950 text-amber-400 rounded-xl flex items-center justify-center font-bold shadow-xs">
+              <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-bold tracking-tight text-white font-serif">Life-Prep Academy</span>
-                <span className="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">CMS Console</span>
+                <span className="text-base font-bold font-serif text-slate-900">Life-Prep Academy</span>
+                <span className="text-[11px] bg-blue-50 text-blue-900 font-semibold px-2 py-0.5 rounded-md border border-blue-100">
+                  School Staff Manager
+                </span>
               </div>
-              <p className="text-[11px] text-slate-400">Content & Operations Center</p>
+              <p className="text-[11px] text-slate-500">Simple, friendly website updates</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
-            <div className="hidden md:flex items-center space-x-2 text-xs text-slate-300 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
-              <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-              <span className="font-mono text-[11px]">{currentAdminEmail}</span>
+            <div className="hidden sm:flex items-center space-x-2 text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="font-medium text-slate-600 truncate max-w-[200px]">{currentAdminEmail}</span>
             </div>
 
             <button
               onClick={onNavigateHome}
-              className="px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors flex items-center space-x-1 border border-slate-700"
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center space-x-1.5 border border-slate-200"
+              title="Preview how visitors see the website"
             >
-              <span>Main Site</span>
-              <ExternalLink className="w-3 h-3 text-slate-400" />
+              <span>View Public Website</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             </button>
 
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 text-xs bg-red-950/60 hover:bg-red-900 text-red-200 rounded-lg transition-colors flex items-center space-x-1 border border-red-800/60"
-              title="Sign Out"
+              className="px-3.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center space-x-1 border border-red-200"
+              title="Log out of administrator account"
             >
-              <LogOut className="w-3 h-3" />
-              <span className="hidden sm:inline">Log Out</span>
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
-        {/* 1. At a Glance Overview Stats Bar (Clickable to switch tab directly) */}
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Operations Overview (Click any item to manage)
-            </h2>
-            <span className="text-xs text-slate-500">All data saved locally in real-time</span>
+        {/* Welcome & Confidence Banner */}
+        <div className="bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center space-x-2 bg-blue-800/60 px-3 py-1 rounded-full text-xs font-medium text-amber-300 mb-2 border border-blue-700/50">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Welcome back to Life-Prep Website Manager</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold font-serif">
+                Everything you update here updates the website right away.
+              </h1>
+              <p className="text-xs sm:text-sm text-blue-100 mt-1 max-w-2xl">
+                No technical skills required! Simply choose a section below, edit the text or dates, and click Save.
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowQuickGuide(!showQuickGuide)}
+                className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-medium transition-colors flex items-center space-x-1.5 backdrop-blur-xs border border-white/20"
+              >
+                <HelpCircle className="w-4 h-4 text-amber-300" />
+                <span>{showQuickGuide ? 'Hide 3-Step Guide' : 'Show 3-Step Guide'}</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {menuItems.map((item) => {
+          {/* Collapsible 3-Step Guide */}
+          {showQuickGuide && (
+            <div className="mt-5 pt-5 border-t border-blue-800/60 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-blue-950/70 p-3.5 rounded-xl border border-blue-800/60 text-xs">
+                <div className="flex items-center space-x-2 font-bold text-amber-300 mb-1">
+                  <span className="w-5 h-5 rounded-full bg-blue-800 flex items-center justify-center text-[11px] text-white">1</span>
+                  <span>Select Any Section</span>
+                </div>
+                <p className="text-blue-100 text-[11px] leading-relaxed">
+                  Click on Homepage Notices, School Events, Campus News, or Teacher Columns to view your content.
+                </p>
+              </div>
+
+              <div className="bg-blue-950/70 p-3.5 rounded-xl border border-blue-800/60 text-xs">
+                <div className="flex items-center space-x-2 font-bold text-amber-300 mb-1">
+                  <span className="w-5 h-5 rounded-full bg-blue-800 flex items-center justify-center text-[11px] text-white">2</span>
+                  <span>Edit with Live Preview</span>
+                </div>
+                <p className="text-blue-100 text-[11px] leading-relaxed">
+                  Type your changes. You will see an instant visual preview of exactly what parents and students will see.
+                </p>
+              </div>
+
+              <div className="bg-blue-950/70 p-3.5 rounded-xl border border-blue-800/60 text-xs">
+                <div className="flex items-center space-x-2 font-bold text-amber-300 mb-1">
+                  <span className="w-5 h-5 rounded-full bg-blue-800 flex items-center justify-center text-[11px] text-white">3</span>
+                  <span>Toggle Live or Hidden</span>
+                </div>
+                <p className="text-blue-100 text-[11px] leading-relaxed">
+                  Click the green button to show or hide items on the public website at any time. You are always in control!
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 1. At-a-Glance Big Friendly Action Cards */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              School Website Modules (Click any card to open)
+            </h2>
+            <span className="text-xs text-slate-400">All changes save instantly to your browser</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+            {menuSections.map((item) => {
               const Icon = item.icon;
               const isCurrent = activeTab === item.id;
               return (
-                <button
+                <div
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
                     setSearchQuery('');
                   }}
-                  className={`text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
+                  className={`cursor-pointer text-left p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                     isCurrent
-                      ? 'bg-white border-blue-600 shadow-sm ring-2 ring-blue-600/10'
-                      : 'bg-white hover:bg-slate-50 border-slate-200'
+                      ? 'bg-white border-blue-600 shadow-md ring-2 ring-blue-500/20'
+                      : 'bg-white hover:bg-slate-50/80 border-slate-200 shadow-xs'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`p-2 rounded-lg ${isCurrent ? 'bg-blue-50 text-blue-900' : 'bg-slate-100 text-slate-600'}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <span className="text-xs font-bold text-slate-500">
-                      {item.badge}
-                    </span>
-                  </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-900 flex items-center justify-between">
-                      <span>{item.name}</span>
-                      <span className="text-sm font-extrabold text-blue-950 font-mono">{item.count}</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`p-2.5 rounded-xl ${isCurrent ? 'bg-blue-900 text-amber-400' : 'bg-slate-100 text-slate-700'}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.statusColor}`}>
+                        {item.statusLabel}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">{item.subtitle}</p>
+
+                    <h3 className="text-sm font-bold text-slate-900 font-serif leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                      {item.description}
+                    </p>
                   </div>
-                </button>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700 font-mono">
+                      {item.count} {item.count === 1 ? 'item' : 'items'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveTab(item.id);
+                        item.onAction();
+                      }}
+                      className="text-xs font-bold text-blue-900 hover:text-blue-700 flex items-center space-x-1"
+                    >
+                      <span>{item.actionLabel}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* 2. Main Two-Column Layout (Sidebar Menu + Active Workspace) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-          {/* Left Column: Management Menu Nav (lg:col-span-3) */}
-          <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-            <div className="p-3.5 border-b border-slate-100 bg-slate-50/50">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Management Modules
-              </span>
-            </div>
-
-            <nav className="p-2 space-y-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isSelected = activeTab === item.id;
+        {/* 2. Workspace Tabs & Search Bar */}
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            {/* Tab navigation pills */}
+            <div className="flex flex-wrap gap-2">
+              {menuSections.map((sec) => {
+                const Icon = sec.icon;
+                const isSelected = activeTab === sec.id;
                 return (
                   <button
-                    key={item.id}
+                    key={sec.id}
                     onClick={() => {
-                      setActiveTab(item.id);
+                      setActiveTab(sec.id);
                       setSearchQuery('');
                     }}
-                    className={`w-full text-left px-3.5 py-3 rounded-lg flex items-center justify-between transition-colors ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
                       isSelected
-                        ? 'bg-blue-900 text-white font-bold shadow-2xs'
-                        : 'text-slate-700 hover:bg-slate-100 font-medium'
+                        ? 'bg-blue-950 text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200/70'
                     }`}
                   >
-                    <div className="flex items-center space-x-3 truncate">
-                      <Icon className={`w-4 h-4 shrink-0 ${isSelected ? 'text-amber-300' : 'text-slate-500'}`} />
-                      <div className="truncate">
-                        <div className="text-xs leading-none">{item.name}</div>
-                        <div className={`text-[10px] mt-1 truncate ${isSelected ? 'text-blue-200' : 'text-slate-400'}`}>
-                          {item.subtitle}
-                        </div>
-                      </div>
-                    </div>
-                    <span className={`text-[11px] px-2 py-0.5 rounded font-mono font-bold shrink-0 ml-2 ${
-                      isSelected ? 'bg-blue-800 text-amber-300' : 'bg-slate-100 text-slate-600'
+                    <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-400' : 'text-slate-500'}`} />
+                    <span>{sec.title}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      isSelected ? 'bg-blue-900 text-amber-300' : 'bg-slate-200 text-slate-700'
                     }`}>
-                      {item.count}
+                      {sec.count}
                     </span>
                   </button>
                 );
               })}
-            </nav>
+            </div>
 
-            {/* Quick Helper Box */}
-            <div className="p-3.5 m-2 bg-slate-50 rounded-lg border border-slate-200/80 text-xs text-slate-600 space-y-1">
-              <p className="font-bold text-slate-800">Need help?</p>
-              <p className="text-[11px] text-slate-500 leading-normal">
-                Changes made here appear instantly on the live website. Use the preview button to verify before visitors see it.
-              </p>
+            {/* Quick action button for active tab */}
+            <div className="shrink-0">
+              {activeTab === 'popups' && (
+                <button
+                  onClick={() => {
+                    resetPopupForm();
+                    setIsEditingPopup(true);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+                >
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>Create New Popup Notice</span>
+                </button>
+              )}
+              {activeTab === 'events' && (
+                <button
+                  onClick={() => {
+                    resetEventForm();
+                    setIsEditingEvent(true);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+                >
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>Schedule New Event</span>
+                </button>
+              )}
+              {activeTab === 'news' && (
+                <button
+                  onClick={() => {
+                    resetNewsForm();
+                    setIsEditingNews(true);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+                >
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>Write News Story</span>
+                </button>
+              )}
+              {activeTab === 'articles' && (
+                <button
+                  onClick={() => {
+                    resetArticleForm();
+                    setIsEditingArticle(true);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center justify-center space-x-1.5"
+                >
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>Publish Faculty Column</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Right Column: Content Workspace (lg:col-span-9) */}
-          <div className="lg:col-span-9 space-y-4">
-
-            {/* Workspace Header & Action Bar */}
-            <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h1 className="text-base sm:text-lg font-bold text-slate-900 font-serif">
-                    {activeTab === 'popups' && 'Website Popup Notices'}
-                    {activeTab === 'events' && 'Academic Calendar Events'}
-                    {activeTab === 'news' && 'Campus News & Announcements'}
-                    {activeTab === 'articles' && 'Faculty Columns & Articles'}
-                    {activeTab === 'admins' && 'Administrator Access Control'}
-                  </h1>
-                  <span className="text-xs font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded">
-                    {activeTab === 'popups' && `${popups.length} items`}
-                    {activeTab === 'events' && `${events.length} items`}
-                    {activeTab === 'news' && `${newsList.length} items`}
-                    {activeTab === 'articles' && `${articles.length} items`}
-                    {activeTab === 'admins' && `${allowedEmails.length} staff`}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  {activeTab === 'popups' && 'Control the announcement cards and promo posters that appear to site visitors.'}
-                  {activeTab === 'events' && 'Manage key academic dates, term exams, sports events, and parent meetings.'}
-                  {activeTab === 'news' && 'Publish school activities, achievements, press updates, and student stories.'}
-                  {activeTab === 'articles' && 'Manage pedagogical columns authored by teachers across all 4 academic categories.'}
-                  {activeTab === 'admins' && 'Authorized email addresses permitted to log in and make updates to the school website.'}
-                </p>
-              </div>
-
-              {/* Action Button */}
-              <div className="flex items-center space-x-2 shrink-0">
-                {activeTab === 'popups' && (
-                  <button
-                    onClick={() => {
-                      resetPopupForm();
-                      setIsEditingPopup(true);
-                    }}
-                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1.5 shadow-2xs"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Create Popup</span>
-                  </button>
-                )}
-
-                {activeTab === 'events' && (
-                  <button
-                    onClick={() => {
-                      resetEventForm();
-                      setIsEditingEvent(true);
-                    }}
-                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1.5 shadow-2xs"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Add Event</span>
-                  </button>
-                )}
-
-                {activeTab === 'news' && (
-                  <button
-                    onClick={() => {
-                      resetNewsForm();
-                      setIsEditingNews(true);
-                    }}
-                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1.5 shadow-2xs"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Write Article</span>
-                  </button>
-                )}
-
-                {activeTab === 'articles' && (
-                  <button
-                    onClick={() => {
-                      resetArticleForm();
-                      setIsEditingArticle(true);
-                    }}
-                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1.5 shadow-2xs"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Publish Column</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Search Bar */}
-            <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs flex items-center space-x-2">
-              <Search className="w-4 h-4 text-slate-400 shrink-0 ml-1" />
+          {/* Search bar with helpful counter */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={`Search ${activeTab}...`}
-                className="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
+                placeholder="Search items by title, category, date, or keyword..."
+                className="w-full text-xs pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-slate-800 placeholder-slate-400"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="text-xs text-slate-400 hover:text-slate-600 px-2 py-0.5 rounded"
+                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 font-bold"
                 >
-                  Clear
+                  ✕ Clear
                 </button>
               )}
             </div>
 
-            {/* 3. TAB SPECIFIC READER-FRIENDLY DATA VIEWS */}
+            <div className="text-xs text-slate-500 font-medium shrink-0 flex items-center space-x-2">
+              <Info className="w-3.5 h-3.5 text-slate-400" />
+              <span>
+                {activeTab === 'popups' && 'Popups display in the center of the homepage when visitors arrive.'}
+                {activeTab === 'events' && 'Events appear in the Upcoming Events calendar on the homepage.'}
+                {activeTab === 'news' && 'News appears in the Latest Campus News section and news feed.'}
+                {activeTab === 'articles' && 'Faculty essays appear in the Teacher Perspectives & Columns page.'}
+                {activeTab === 'admins' && 'Only verified staff emails listed here can sign in to this portal.'}
+              </span>
+            </div>
+          </div>
+        </div>
 
-            {/* TAB 1: POPUPS */}
-            {activeTab === 'popups' && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                <div className="p-3.5 bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600 grid grid-cols-12 gap-2">
-                  <span className="col-span-5 sm:col-span-5">Notice Title & Details</span>
-                  <span className="col-span-3 sm:col-span-3">Format & Type</span>
-                  <span className="col-span-2 sm:col-span-2 text-center">Status</span>
-                  <span className="col-span-2 sm:col-span-2 text-right">Actions</span>
-                </div>
+        {/* 3. CONTENT AREA FOR ACTIVE TAB */}
 
-                {filteredPopups.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400 space-y-2">
-                    <Layers className="w-8 h-8 mx-auto text-slate-300" />
-                    <p className="text-xs font-medium">No popups found matching your query.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {filteredPopups.map((popup) => (
-                      <div
-                        key={popup.id}
-                        className={`p-3.5 sm:p-4 grid grid-cols-12 gap-2 items-center hover:bg-slate-50/80 transition-colors ${
-                          !popup.isActive ? 'bg-slate-50/40 opacity-70' : ''
-                        }`}
-                      >
-                        <div className="col-span-5 sm:col-span-5 space-y-1 pr-2">
-                          <div className="flex items-center space-x-1.5">
-                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 uppercase">
-                              {popup.badgeText || 'NOTICE'}
-                            </span>
-                            <h3 className="text-xs font-bold text-slate-900 truncate">
-                              {popup.title}
-                            </h3>
-                          </div>
-                          <p className="text-[11px] text-slate-500 truncate">
-                            {popup.popupType === 'template'
-                              ? `${popup.dateTime || 'No date set'} • ${popup.location || 'Campus'}`
-                              : 'Custom Image Poster'}
-                          </p>
-                        </div>
-
-                        <div className="col-span-3 sm:col-span-3">
-                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded inline-flex items-center space-x-1 ${
-                            popup.popupType === 'template'
-                              ? 'bg-blue-50 text-blue-900 border border-blue-200/60'
-                              : 'bg-amber-50 text-amber-900 border border-amber-200/60'
-                          }`}>
-                            {popup.popupType === 'template' ? (
-                              <>
-                                <Clock className="w-3 h-3 text-blue-700" />
-                                <span>Structured Card</span>
-                              </>
-                            ) : (
-                              <>
-                                <ImageIcon className="w-3 h-3 text-amber-700" />
-                                <span>Image Banner</span>
-                              </>
-                            )}
-                          </span>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2 text-center">
-                          <button
-                            onClick={() => handleTogglePopupStatus(popup.id)}
-                            className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors inline-flex items-center space-x-1 ${
-                              popup.isActive
-                                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                                : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                            }`}
-                            title="Click to toggle active state on main website"
-                          >
-                            {popup.isActive ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-700" />
-                                <span>Active</span>
-                              </>
-                            ) : (
-                              <>
-                                <X className="w-3 h-3 text-slate-500" />
-                                <span>Hidden</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2 flex items-center justify-end space-x-1">
-                          <button
-                            onClick={() => setPreviewPopup(popup)}
-                            className="p-1.5 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded"
-                            title="Preview Popup"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setCurrentPopupForm(popup);
-                              setIsEditingPopup(true);
-                            }}
-                            className="p-1.5 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded"
-                            title="Edit Popup"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePopup(popup.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded"
-                            title="Delete Popup"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 2: EVENTS */}
-            {activeTab === 'events' && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                <div className="p-3.5 bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600 grid grid-cols-12 gap-2">
-                  <span className="col-span-2 sm:col-span-2">Date</span>
-                  <span className="col-span-5 sm:col-span-5">Event Title & Category</span>
-                  <span className="col-span-3 sm:col-span-3">Time & Venue</span>
-                  <span className="col-span-2 sm:col-span-2 text-right">Actions</span>
-                </div>
-
-                {filteredEvents.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400 space-y-2">
-                    <Calendar className="w-8 h-8 mx-auto text-slate-300" />
-                    <p className="text-xs font-medium">No events found matching your query.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {filteredEvents.map((evt) => (
-                      <div
-                        key={evt.id}
-                        className="p-3.5 sm:p-4 grid grid-cols-12 gap-2 items-center hover:bg-slate-50/80 transition-colors"
-                      >
-                        <div className="col-span-2 sm:col-span-2">
-                          <div className="inline-flex flex-col items-center justify-center w-11 h-11 bg-slate-100 text-slate-900 rounded-lg border border-slate-200">
-                            <span className="text-[9px] font-bold uppercase text-slate-500">{evt.month}</span>
-                            <span className="text-sm font-extrabold font-serif leading-none">{evt.day}</span>
-                          </div>
-                        </div>
-
-                        <div className="col-span-5 sm:col-span-5 space-y-0.5 pr-2">
-                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-50 text-blue-900">
-                            {evt.category}
-                          </span>
-                          <h3 className="text-xs font-bold text-slate-900 truncate">
-                            {evt.title}
-                          </h3>
-                          {evt.description && (
-                            <p className="text-[11px] text-slate-500 truncate">{evt.description}</p>
-                          )}
-                        </div>
-
-                        <div className="col-span-3 sm:col-span-3 text-[11px] text-slate-600 space-y-0.5">
-                          <p className="truncate font-medium">{evt.time}</p>
-                          <p className="text-slate-400 truncate">{evt.location}</p>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2 flex items-center justify-end space-x-1">
-                          <button
-                            onClick={() => {
-                              setNewEventForm(evt);
-                              setIsEditingEvent(true);
-                            }}
-                            className="p-1.5 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded"
-                            title="Edit Event"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEvent(evt.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded"
-                            title="Delete Event"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 3: NEWS */}
-            {activeTab === 'news' && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                <div className="p-3.5 bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600 grid grid-cols-12 gap-2">
-                  <span className="col-span-6 sm:col-span-6">Story Title & Excerpt</span>
-                  <span className="col-span-2 sm:col-span-2">Category</span>
-                  <span className="col-span-2 sm:col-span-2">Date Published</span>
-                  <span className="col-span-2 sm:col-span-2 text-right">Actions</span>
-                </div>
-
-                {filteredNews.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400 space-y-2">
-                    <FileText className="w-8 h-8 mx-auto text-slate-300" />
-                    <p className="text-xs font-medium">No school news found matching your query.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {filteredNews.map((news) => (
-                      <div
-                        key={news.id}
-                        className="p-3.5 sm:p-4 grid grid-cols-12 gap-2 items-center hover:bg-slate-50/80 transition-colors"
-                      >
-                        <div className="col-span-6 sm:col-span-6 space-y-1 pr-3">
-                          <h3 className="text-xs font-bold text-slate-900 truncate">
-                            {news.title}
-                          </h3>
-                          <p className="text-[11px] text-slate-500 line-clamp-1">
-                            {news.excerpt || news.content}
-                          </p>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                            {news.category}
-                          </span>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2 text-[11px] text-slate-500">
-                          {news.date}
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2 flex items-center justify-end space-x-1">
-                          <button
-                            onClick={() => {
-                              setNewNewsForm(news);
-                              setIsEditingNews(true);
-                            }}
-                            className="p-1.5 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded"
-                            title="Edit News"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteNews(news.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded"
-                            title="Delete News"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 4: ARTICLES */}
-            {activeTab === 'articles' && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                <div className="p-3.5 bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600 grid grid-cols-12 gap-2">
-                  <span className="col-span-5 sm:col-span-5">Article & Subject</span>
-                  <span className="col-span-3 sm:col-span-3">Educator / Author</span>
-                  <span className="col-span-2 sm:col-span-2">Division</span>
-                  <span className="col-span-2 sm:col-span-2 text-right">Actions</span>
-                </div>
-
-                {filteredArticles.length === 0 ? (
-                  <div className="p-12 text-center text-slate-400 space-y-2">
-                    <PenTool className="w-8 h-8 mx-auto text-slate-300" />
-                    <p className="text-xs font-medium">No faculty articles found matching your query.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {filteredArticles.map((art) => (
-                      <div
-                        key={art.id}
-                        className="p-3.5 sm:p-4 grid grid-cols-12 gap-2 items-center hover:bg-slate-50/80 transition-colors"
-                      >
-                        <div className="col-span-5 sm:col-span-5 space-y-1 pr-3">
-                          <h3 className="text-xs font-bold text-slate-900 truncate">
-                            {art.title}
-                          </h3>
-                          <p className="text-[11px] text-slate-500 line-clamp-1">
-                            {art.summary}
-                          </p>
-                        </div>
-
-                        <div className="col-span-3 sm:col-span-3">
-                          <p className="text-xs font-bold text-slate-800 truncate">{art.authorName}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{art.authorRole}</p>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2">
-                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-900">
-                            {art.division}
-                          </span>
-                        </div>
-
-                        <div className="col-span-2 sm:col-span-2 flex items-center justify-end space-x-1">
-                          <button
-                            onClick={() => {
-                              setNewArticleForm(art);
-                              setIsEditingArticle(true);
-                            }}
-                            className="p-1.5 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded"
-                            title="Edit Article"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteArticle(art.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded"
-                            title="Delete Article"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 5: ADMINS */}
-            {activeTab === 'admins' && (
-              <div className="space-y-4">
-                {/* Grant Email Form */}
-                <form
-                  onSubmit={handleAddAdminEmail}
-                  className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2"
+        {/* TAB 1: HOMEPAGE POPUPS */}
+        {activeTab === 'popups' && (
+          <div className="space-y-4">
+            {filteredPopups.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                <Megaphone className="w-12 h-12 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800">No notice popups found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  {searchQuery ? 'Try clearing your search query to see all popups.' : 'Create an announcement popup to notify parents and students of upcoming events or admissions.'}
+                </p>
+                <button
+                  onClick={() => {
+                    resetPopupForm();
+                    setIsEditingPopup(true);
+                  }}
+                  className="px-4 py-2 bg-blue-950 text-white rounded-xl text-xs font-bold"
                 >
-                  <label className="block text-xs font-bold text-slate-800">
-                    Add Authorized Staff Email
-                  </label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="email"
-                        required
-                        value={newAdminEmailInput}
-                        onChange={(e) => setNewAdminEmailInput(e.target.value)}
-                        placeholder="e.g. staff@lpanc.edu.np"
-                        className="w-full px-3.5 py-2 pl-9 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-slate-900 focus:outline-none"
-                      />
-                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                    </div>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors flex items-center space-x-1 shrink-0"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Grant Access</span>
-                    </button>
-                  </div>
-                </form>
-
-                {/* List of Admins */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-                  <div className="p-3.5 bg-slate-50/80 border-b border-slate-200 text-xs font-bold text-slate-600">
-                    Registered Administrator Accounts ({allowedEmails.length})
-                  </div>
-
-                  <div className="divide-y divide-slate-100">
-                    {filteredAdmins.map((email) => {
-                      const isMainAdmin = email.toLowerCase() === 'rajumoktan@gmail.com';
-                      return (
-                        <div
-                          key={email}
-                          className="p-3.5 sm:p-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors"
-                        >
-                          <div className="flex items-center space-x-3 truncate pr-2">
-                            <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                              <ShieldCheck className="w-4 h-4 text-blue-900" />
-                            </div>
-                            <div className="truncate">
-                              <p className="text-xs font-bold text-slate-900 truncate font-mono">{email}</p>
-                              <span className="text-[10px] text-slate-500 font-medium">
-                                {isMainAdmin ? 'Primary Administrator (Founder)' : 'Authorized Staff Admin'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {!isMainAdmin && (
-                            <button
-                              onClick={() => handleRemoveAdminEmail(email)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
-                              title="Revoke Permission"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
+                  + Create First Notice
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredPopups.map((popup) => (
+                  <div
+                    key={popup.id}
+                    className={`bg-white rounded-2xl border transition-all p-5 shadow-xs flex flex-col justify-between ${
+                      popup.isActive
+                        ? 'border-emerald-300 ring-1 ring-emerald-400/20'
+                        : 'border-slate-200 opacity-80 bg-slate-50/50'
+                    }`}
+                  >
+                    <div>
+                      {/* Status header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            popup.isActive
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : 'bg-slate-200 text-slate-600'
+                          }`}>
+                            {popup.isActive ? '● Live on Website' : '○ Hidden / Draft'}
+                          </span>
+                          <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                            {popup.popupType === 'template' ? 'Card Notice' : 'Image Poster'}
+                          </span>
                         </div>
-                      );
-                    })}
+
+                        {/* Direct Toggle */}
+                        <button
+                          onClick={() => handleTogglePopupStatus(popup.id)}
+                          className={`text-xs font-bold px-3 py-1 rounded-lg transition-colors flex items-center space-x-1 ${
+                            popup.isActive
+                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-300'
+                          }`}
+                          title="Click to toggle whether this popup shows on the public website"
+                        >
+                          {popup.isActive ? (
+                            <>
+                              <ToggleRight className="w-4 h-4 text-emerald-600" />
+                              <span>Showing Live</span>
+                            </>
+                          ) : (
+                            <>
+                              <ToggleLeft className="w-4 h-4 text-slate-400" />
+                              <span>Currently Hidden</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Content Preview */}
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                          {popup.badgeText || 'NOTICE'}
+                        </span>
+                        <h3 className="text-base font-bold text-slate-900 font-serif leading-snug">
+                          {popup.title}
+                        </h3>
+                        {popup.tagline && (
+                          <p className="text-xs text-blue-900 font-medium">
+                            {popup.tagline}
+                          </p>
+                        )}
+                        {popup.dateTime && (
+                          <div className="flex items-center space-x-1.5 text-xs text-slate-600 pt-1">
+                            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{popup.dateTime}</span>
+                          </div>
+                        )}
+                        {popup.location && (
+                          <div className="flex items-center space-x-1.5 text-xs text-slate-600">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{popup.location}</span>
+                          </div>
+                        )}
+                        {popup.description && (
+                          <p className="text-xs text-slate-500 pt-1 line-clamp-2 leading-relaxed">
+                            {popup.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+                      <button
+                        onClick={() => setPreviewPopup(popup)}
+                        className="px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center space-x-1.5"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Preview As Visitor</span>
+                      </button>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            setCurrentPopupForm(popup);
+                            setIsEditingPopup(true);
+                          }}
+                          className="px-3 py-1.5 text-xs font-bold text-blue-950 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center space-x-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleDeletePopup(popup.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete notice"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* TAB 2: ACADEMIC EVENTS */}
+        {activeTab === 'events' && (
+          <div className="space-y-4">
+            {filteredEvents.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                <Calendar className="w-12 h-12 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800">No scheduled events found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Add key academic dates, term exams, holidays, sports meets, or parent orientation sessions.
+                </p>
+                <button
+                  onClick={() => {
+                    resetEventForm();
+                    setIsEditingEvent(true);
+                  }}
+                  className="px-4 py-2 bg-blue-950 text-white rounded-xl text-xs font-bold"
+                >
+                  + Add First Event
+                </button>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs divide-y divide-slate-100 overflow-hidden">
+                {filteredEvents.map((evt) => (
+                  <div key={evt.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors">
+                    <div className="flex items-start space-x-4">
+                      {/* Date Badge */}
+                      <div className="w-14 h-14 bg-blue-50 border border-blue-200 text-blue-950 rounded-xl flex flex-col items-center justify-center shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700">{evt.month}</span>
+                        <span className="text-lg font-black font-serif leading-none">{evt.day}</span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                            {evt.category}
+                          </span>
+                          <span className="text-xs text-slate-400 font-mono">{evt.date}</span>
+                        </div>
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 font-serif">
+                          {evt.title}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 pt-0.5">
+                          <span className="flex items-center space-x-1">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{evt.time}</span>
+                          </span>
+                          <span className="flex items-center space-x-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{evt.location}</span>
+                          </span>
+                        </div>
+                        {evt.description && (
+                          <p className="text-xs text-slate-600 pt-1 line-clamp-1 max-w-2xl">{evt.description}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 self-end sm:self-center shrink-0">
+                      <button
+                        onClick={() => {
+                          setNewEventForm(evt);
+                          setIsEditingEvent(true);
+                        }}
+                        className="px-3 py-1.5 text-xs font-bold text-blue-950 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center space-x-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(evt.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete event"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: CAMPUS NEWS */}
+        {activeTab === 'news' && (
+          <div className="space-y-4">
+            {filteredNews.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                <Newspaper className="w-12 h-12 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800">No news articles found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Publish a story celebrating student achievements, campus updates, or science exhibitions.
+                </p>
+                <button
+                  onClick={() => {
+                    resetNewsForm();
+                    setIsEditingNews(true);
+                  }}
+                  className="px-4 py-2 bg-blue-950 text-white rounded-xl text-xs font-bold"
+                >
+                  + Write First Story
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredNews.map((news) => (
+                  <div key={news.id} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-colors">
+                    <div>
+                      {news.image && (
+                        <div className="w-full h-40 rounded-xl overflow-hidden mb-3 bg-slate-100">
+                          <img
+                            src={news.image}
+                            alt={news.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                          {news.category}
+                        </span>
+                        <span className="text-xs text-slate-400">{news.date}</span>
+                        <span className="text-xs text-slate-400">• {news.readTime}</span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-slate-900 font-serif leading-snug line-clamp-2">
+                        {news.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">
+                        {news.excerpt || news.content}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-400">Published on school website</span>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            setNewNewsForm(news);
+                            setIsEditingNews(true);
+                          }}
+                          className="px-3 py-1.5 text-xs font-bold text-blue-950 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center space-x-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteNews(news.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete news story"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: FACULTY ARTICLES & PERSPECTIVES */}
+        {activeTab === 'articles' && (
+          <div className="space-y-4">
+            {filteredArticles.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+                <BookOpen className="w-12 h-12 text-slate-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800">No educator columns found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Publish essays, pedagogical insights, or letters from the Principal or department heads.
+                </p>
+                <button
+                  onClick={() => {
+                    resetArticleForm();
+                    setIsEditingArticle(true);
+                  }}
+                  className="px-4 py-2 bg-blue-950 text-white rounded-xl text-xs font-bold"
+                >
+                  + Add First Article
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredArticles.map((art) => (
+                  <div key={art.id} className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-colors">
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-900 border border-blue-100 uppercase">
+                          {art.division}
+                        </span>
+                        <span className="text-xs text-slate-400">{art.date}</span>
+                        <span className="text-xs text-slate-400">• {art.readTime}</span>
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 font-serif">
+                        {art.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 line-clamp-2 max-w-3xl leading-relaxed">
+                        {art.summary || art.content}
+                      </p>
+                      <div className="text-xs text-slate-700 font-medium pt-1">
+                        By <strong className="text-slate-900">{art.authorName}</strong> ({art.authorRole})
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 self-end sm:self-center shrink-0">
+                      <button
+                        onClick={() => {
+                          setNewArticleForm(art);
+                          setIsEditingArticle(true);
+                        }}
+                        className="px-3 py-1.5 text-xs font-bold text-blue-950 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center space-x-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteArticle(art.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete article"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 5: AUTHORIZED STAFF PERMISSIONS */}
+        {activeTab === 'admins' && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+            <div>
+              <div className="flex items-center space-x-2 mb-1">
+                <Users className="w-5 h-5 text-blue-900" />
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 font-serif">
+                  Authorized Staff Access Management
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-2xl">
+                Anyone whose email is listed below can log in to this portal using their email and the school PIN (1234 or 2026).
+                To give a teacher or administrator access, simply type their email below.
+              </p>
+            </div>
+
+            {/* Add new email form */}
+            <form onSubmit={handleAddAdminEmail} className="flex flex-col sm:flex-row items-center gap-3 max-w-xl">
+              <div className="relative flex-1 w-full">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="email"
+                  value={newAdminEmailInput}
+                  onChange={(e) => setNewAdminEmailInput(e.target.value)}
+                  placeholder="teacher@lpanc.edu.np"
+                  className="w-full text-xs pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full sm:w-auto px-5 py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 flex items-center justify-center space-x-1.5"
+              >
+                <Plus className="w-4 h-4 text-amber-400" />
+                <span>Authorize New Staff Email</span>
+              </button>
+            </form>
+
+            {/* List of current staff */}
+            <div className="border border-slate-200 rounded-xl divide-y divide-slate-100 overflow-hidden">
+              <div className="bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-600 flex items-center justify-between">
+                <span>Authorized Staff Email Address</span>
+                <span>Permissions & Action</span>
+              </div>
+              {filteredAdmins.map((adminEmail) => {
+                const isPrimary = adminEmail.toLowerCase() === 'rajumoktan@gmail.com';
+                return (
+                  <div key={adminEmail} className="px-4 py-3 flex items-center justify-between text-xs hover:bg-slate-50/50">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-900 flex items-center justify-center font-bold">
+                        {adminEmail.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-900 font-mono text-[13px]">{adminEmail}</div>
+                        <div className="text-[11px] text-slate-400">
+                          {isPrimary ? 'Principal / Primary System Admin' : 'Authorized Academic Staff'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        Active Access
+                      </span>
+                      {!isPrimary && (
+                        <button
+                          onClick={() => handleRemoveAdminEmail(adminEmail)}
+                          className="px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                        >
+                          Revoke Access
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* 4. MODALS & SLIDEOVERS (Clean, Standard Form Layouts) */}
-
-      {/* POPUP EDIT / CREATE MODAL */}
+      {/* ========================================================
+          MODAL 1: ADD / EDIT POPUP NOTICE (With Real-Time Visual Live Preview)
+      ======================================================== */}
       {isEditingPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900 font-serif">
-                {currentPopupForm.id ? 'Edit Popup Notice' : 'Create New Popup Notice'}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-scale-in">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 bg-blue-950 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 bg-blue-900 text-amber-400 rounded-xl flex items-center justify-center">
+                  <Megaphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-serif">
+                    {currentPopupForm.id ? 'Edit Homepage Notice' : 'Create New Homepage Notice'}
+                  </h3>
+                  <p className="text-xs text-blue-200">
+                    Follow the simple fields below. A real-time preview appears on the right.
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsEditingPopup(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm"
               >
-                <X className="w-5 h-5" />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSavePopupForm} className="space-y-4 text-xs">
-              {/* Type Selection */}
-              <div>
-                <label className="block font-bold text-slate-800 mb-1.5">Popup Format</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentPopupForm((prev) => ({ ...prev, popupType: 'template' }))}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      currentPopupForm.popupType === 'template'
-                        ? 'bg-blue-50 border-blue-900 text-blue-950 font-bold ring-1 ring-blue-900'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-1.5">
-                      <Clock className="w-3.5 h-3.5 text-blue-900" />
-                      <span>Card Template</span>
-                    </div>
-                    <p className="text-[10px] text-slate-500 font-normal mt-0.5">Date, location & CTA button</p>
-                  </button>
+            {/* Modal Body: Split view (Form on left, Real-Time Preview on right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 flex-1 overflow-y-auto divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+              {/* Form Controls (col-span-7) */}
+              <form onSubmit={handleSavePopupForm} className="lg:col-span-7 p-5 sm:p-6 space-y-4">
+                {/* 1. Format Switch */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Notice Format Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPopupForm({ ...currentPopupForm, popupType: 'template' })}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        currentPopupForm.popupType === 'template'
+                          ? 'border-blue-700 bg-blue-50/70 text-blue-950 ring-2 ring-blue-600/10 font-bold'
+                          : 'border-slate-200 bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <div className="text-xs font-bold flex items-center space-x-1.5">
+                        <Clock className="w-3.5 h-3.5 text-blue-800" />
+                        <span>Formatted Card</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-normal mt-0.5">
+                        Structured headline, date, venue, and action button
+                      </p>
+                    </button>
 
+                    <button
+                      type="button"
+                      onClick={() => setCurrentPopupForm({ ...currentPopupForm, popupType: 'image' })}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        currentPopupForm.popupType === 'image'
+                          ? 'border-blue-700 bg-blue-50/70 text-blue-950 ring-2 ring-blue-600/10 font-bold'
+                          : 'border-slate-200 bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <div className="text-xs font-bold flex items-center space-x-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Graphic Poster Flyer</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-normal mt-0.5">
+                        Upload or link an event flyer or poster image
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Live Switch */}
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-slate-800">Publish Status</div>
+                    <p className="text-[11px] text-slate-500">Should this notice appear on the website immediately?</p>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setCurrentPopupForm((prev) => ({ ...prev, popupType: 'image' }))}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      currentPopupForm.popupType === 'image'
-                        ? 'bg-amber-50 border-amber-600 text-slate-950 font-bold ring-1 ring-amber-600'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    onClick={() => setCurrentPopupForm({ ...currentPopupForm, isActive: !currentPopupForm.isActive })}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-colors ${
+                      currentPopupForm.isActive
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-slate-200 text-slate-700'
                     }`}
                   >
-                    <div className="flex items-center space-x-1.5">
-                      <ImageIcon className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Image Poster</span>
-                    </div>
-                    <p className="text-[10px] text-slate-500 font-normal mt-0.5">Upload custom flyer / banner</p>
+                    {currentPopupForm.isActive ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Yes, Show Live</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-3.5 h-3.5" />
+                        <span>Save as Hidden Draft</span>
+                      </>
+                    )}
                   </button>
                 </div>
-              </div>
 
-              {/* Title & Badge */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="col-span-2">
-                  <label className="block font-bold text-slate-800 mb-1">
-                    Title <span className="text-red-500">*</span>
+                {/* 3. Title */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Notice Headline <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={currentPopupForm.title || ''}
-                    onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="e.g. 2026 Orientation Day"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900"
+                    onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, title: e.target.value })}
+                    placeholder="e.g. 2026–2027 Parents Orientation & Campus Tour"
+                    className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                   />
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">Badge</label>
-                  <input
-                    type="text"
-                    value={currentPopupForm.badgeText || ''}
-                    onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, badgeText: e.target.value }))}
-                    placeholder="NOTICE"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg uppercase"
-                  />
-                </div>
-              </div>
 
-              {/* Template fields */}
-              {currentPopupForm.popupType === 'template' ? (
-                <div className="space-y-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-semibold text-slate-700 mb-0.5">Subtitle</label>
-                      <input
-                        type="text"
-                        value={currentPopupForm.tagline || ''}
-                        onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, tagline: e.target.value }))}
-                        placeholder="Admissions Open"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-slate-700 mb-0.5">Date & Time</label>
-                      <input
-                        type="text"
-                        value={currentPopupForm.dateTime || ''}
-                        onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, dateTime: e.target.value }))}
-                        placeholder="Sep 15, 10:00 AM"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                      />
-                    </div>
+                {/* Badge Tag */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Top Label Tag
+                    </label>
+                    <input
+                      type="text"
+                      value={currentPopupForm.badgeText || ''}
+                      onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, badgeText: e.target.value.toUpperCase() })}
+                      placeholder="e.g. NOTICE, ADMISSIONS, OPEN HOUSE"
+                      className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 uppercase"
+                    />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block font-semibold text-slate-700 mb-0.5">Location</label>
-                      <input
-                        type="text"
-                        value={currentPopupForm.location || ''}
-                        onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, location: e.target.value }))}
-                        placeholder="Main Auditorium"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                      />
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Tagline / Occasion
+                    </label>
+                    <input
+                      type="text"
+                      value={currentPopupForm.tagline || ''}
+                      onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, tagline: e.target.value })}
+                      placeholder="e.g. Fall 2026 Admissions Open"
+                      className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                    />
+                  </div>
+                </div>
+
+                {/* If Template Type */}
+                {currentPopupForm.popupType === 'template' ? (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Date & Time
+                        </label>
+                        <input
+                          type="text"
+                          value={currentPopupForm.dateTime || ''}
+                          onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, dateTime: e.target.value })}
+                          placeholder="e.g. Tuesday, Aug 25 | 10:00 AM ~ 12:00 PM"
+                          className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Location / Venue
+                        </label>
+                        <input
+                          type="text"
+                          value={currentPopupForm.location || ''}
+                          onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, location: e.target.value })}
+                          placeholder="e.g. Main Auditorium, LPA Campus"
+                          className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                        />
+                      </div>
                     </div>
+
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-0.5">Target Audience</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Target Audience
+                      </label>
                       <input
                         type="text"
                         value={currentPopupForm.targetAudience || ''}
-                        onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, targetAudience: e.target.value }))}
-                        placeholder="Prospective Parents"
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
+                        onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, targetAudience: e.target.value })}
+                        placeholder="e.g. Prospective Nursery to Grade 10 Parents"
+                        className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-0.5">Description</label>
-                    <textarea
-                      rows={2}
-                      value={currentPopupForm.description || ''}
-                      onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, description: e.target.value }))}
-                      placeholder="Brief details about this notice..."
-                      className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-0.5">Button Text</label>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Notice Details & Message
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={currentPopupForm.description || ''}
+                        onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, description: e.target.value })}
+                        placeholder="Explain what parents or students need to know..."
+                        className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Action Button Label
+                        </label>
+                        <input
+                          type="text"
+                          value={currentPopupForm.ctaText || ''}
+                          onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, ctaText: e.target.value })}
+                          placeholder="e.g. Apply for Admissions Online"
+                          className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Where does the button take visitors?
+                        </label>
+                        <select
+                          value={currentPopupForm.ctaAction || 'admissions'}
+                          onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, ctaAction: e.target.value as any })}
+                          className="w-full text-xs px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
+                        >
+                          <option value="admissions">Open Online Admissions Application</option>
+                          <option value="tour">Open Campus Tour Booking Form</option>
+                          <option value="url">External Web Link</option>
+                        </select>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* If Image Poster Type */
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Poster Image Link (URL) or Upload
+                      </label>
                       <input
-                        type="text"
-                        value={currentPopupForm.ctaText || ''}
-                        onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, ctaText: e.target.value }))}
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
+                        type="url"
+                        value={currentPopupForm.imageUrl || ''}
+                        onChange={(e) => setCurrentPopupForm({ ...currentPopupForm, imageUrl: e.target.value })}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                       />
                     </div>
-                    <div>
-                      <label className="block font-semibold text-slate-700 mb-0.5">Action on Click</label>
-                      <select
-                        value={currentPopupForm.ctaAction || 'admissions'}
-                        onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, ctaAction: e.target.value as any }))}
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                      >
-                        <option value="admissions">Open Admissions Form</option>
-                        <option value="tour">Open Campus Tour Booking</option>
-                        <option value="close">Close Popup Only</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">Upload Image (JPG/PNG)</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageFileUpload}
-                      className="w-full text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-0.5">Or Image Web URL</label>
-                    <input
-                      type="url"
-                      value={currentPopupForm.imageUrl || ''}
-                      onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, imageUrl: e.target.value }))}
-                      placeholder="https://..."
-                      className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                    />
-                  </div>
-                  {currentPopupForm.imageUrl && (
-                    <div className="p-2 bg-white rounded border border-slate-200 text-center">
-                      <img
-                        src={currentPopupForm.imageUrl}
-                        alt="Preview"
-                        className="max-h-36 rounded object-contain mx-auto"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-0.5">Click Action</label>
-                    <select
-                      value={currentPopupForm.clickUrl || 'admissions'}
-                      onChange={(e) => setCurrentPopupForm((prev) => ({ ...prev, clickUrl: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md bg-white"
-                    >
-                      <option value="admissions">Open Admissions Modal</option>
-                      <option value="tour">Open Tour Modal</option>
-                    </select>
-                  </div>
-                </div>
-              )}
 
-              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingPopup(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow-sm"
-                >
-                  Save & Publish
-                </button>
+                    <div>
+                      <label className="block text-[11px] font-medium text-slate-600 mb-1">
+                        Or upload an image from your computer:
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileUpload}
+                        className="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-900 hover:file:bg-blue-100"
+                      />
+                    </div>
+
+                    {/* Quick photo presets */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1.5">
+                        Quick Preset Photos:
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SAMPLE_IMAGE_PRESETS.map((preset) => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => setCurrentPopupForm({ ...currentPopupForm, imageUrl: preset.url })}
+                            className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-md"
+                          >
+                            + {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Form Buttons */}
+                <div className="pt-4 border-t border-slate-200 flex items-center justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingPopup(false)}
+                    className="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-blue-950 hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-1.5"
+                  >
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span>Save & Update Notice</span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Real-Time Live Preview Pane (col-span-5) */}
+              <div className="lg:col-span-5 bg-slate-100 p-5 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center space-x-2 text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
+                    <Eye className="w-4 h-4 text-blue-900" />
+                    <span>Live Visitor Preview</span>
+                  </div>
+
+                  {/* Simulated visitor card */}
+                  <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 tracking-wider uppercase">
+                        {currentPopupForm.badgeText || 'NOTICE'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">Visitor Popup Card</span>
+                    </div>
+
+                    <h4 className="text-base font-bold font-serif text-slate-900 leading-snug">
+                      {currentPopupForm.title || 'Notice Headline Appears Here'}
+                    </h4>
+
+                    {currentPopupForm.tagline && (
+                      <p className="text-xs font-semibold text-blue-900">
+                        {currentPopupForm.tagline}
+                      </p>
+                    )}
+
+                    {currentPopupForm.popupType === 'template' ? (
+                      <div className="space-y-2 pt-1 text-xs text-slate-600">
+                        {currentPopupForm.dateTime && (
+                          <div className="flex items-center space-x-1.5 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <Clock className="w-3.5 h-3.5 text-blue-900 shrink-0" />
+                            <span className="text-[11px]">{currentPopupForm.dateTime}</span>
+                          </div>
+                        )}
+                        {currentPopupForm.location && (
+                          <div className="flex items-center space-x-1.5 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <MapPin className="w-3.5 h-3.5 text-blue-900 shrink-0" />
+                            <span className="text-[11px]">{currentPopupForm.location}</span>
+                          </div>
+                        )}
+                        {currentPopupForm.description && (
+                          <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
+                            {currentPopupForm.description}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          className="w-full mt-3 py-2 bg-blue-950 text-white text-xs font-bold rounded-xl shadow-xs"
+                        >
+                          {currentPopupForm.ctaText || 'Action Button'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="pt-2">
+                        {currentPopupForm.imageUrl ? (
+                          <img
+                            src={currentPopupForm.imageUrl}
+                            alt="Preview"
+                            className="w-full h-44 object-cover rounded-xl"
+                          />
+                        ) : (
+                          <div className="w-full h-44 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 space-y-1">
+                            <ImageIcon className="w-8 h-8" />
+                            <span className="text-xs">Poster flyer preview</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 text-blue-900 rounded-xl border border-blue-200 text-xs">
+                  <span className="font-bold">What happens when I save?</span>
+                  <p className="text-[11px] text-blue-800 mt-0.5 leading-normal">
+                    If "Yes, Show Live" is selected, parents opening the Life-Prep homepage will see this popup card. You can turn it off at any time.
+                  </p>
+                </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
 
-      {/* EVENT EDIT / CREATE MODAL */}
+      {/* ========================================================
+          MODAL 2: ADD / EDIT ACADEMIC EVENT
+      ======================================================== */}
       {isEditingEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-base font-bold text-slate-900 font-serif">
-                {newEventForm.id ? 'Edit Academic Event' : 'Add Academic Event'}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl border border-slate-200 overflow-hidden my-auto animate-scale-in">
+            <div className="p-4 sm:p-5 bg-blue-950 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 bg-blue-900 text-amber-400 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-serif">
+                    {newEventForm.id ? 'Edit School Calendar Event' : 'Add New School Event'}
+                  </h3>
+                  <p className="text-xs text-blue-200">Exams, holidays, sports meets, and parent meetings</p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsEditingEvent(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm"
               >
-                <X className="w-5 h-5" />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveEvent} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEvent} className="p-5 sm:p-6 space-y-4">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Event Title *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Event Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={newEventForm.title || ''}
                   onChange={(e) => setNewEventForm({ ...newEventForm, title: e.target.value })}
-                  placeholder="e.g. Term 2 Examination"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="e.g. First Term Academic Examinations"
+                  className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Month (e.g. SEP)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Month Abbreviation
+                  </label>
                   <input
                     type="text"
-                    value={newEventForm.month || ''}
-                    onChange={(e) => setNewEventForm({ ...newEventForm, month: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg uppercase"
+                    maxLength={3}
+                    value={newEventForm.month || 'SEP'}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, month: e.target.value.toUpperCase() })}
+                    placeholder="SEP"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 uppercase font-bold text-center"
                   />
                 </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Day (e.g. 15)</label>
-                  <input
-                    type="text"
-                    value={newEventForm.day || ''}
-                    onChange={(e) => setNewEventForm({ ...newEventForm, day: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Time</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Day Number
+                  </label>
                   <input
                     type="text"
-                    value={newEventForm.time || ''}
-                    onChange={(e) => setNewEventForm({ ...newEventForm, time: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    maxLength={2}
+                    value={newEventForm.day || '15'}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, day: e.target.value })}
+                    placeholder="15"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 font-bold text-center"
                   />
                 </div>
+
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Category</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Category
+                  </label>
                   <select
                     value={newEventForm.category || 'Academics'}
                     onChange={(e) => setNewEventForm({ ...newEventForm, category: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg bg-white"
+                    className="w-full text-xs px-2 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
                   >
                     <option value="Academics">Academics</option>
-                    <option value="Campus Life">Campus Life</option>
+                    <option value="Admissions">Admissions</option>
                     <option value="Sports">Sports</option>
-                    <option value="Arts">Arts</option>
+                    <option value="Arts & Music">Arts & Music</option>
+                    <option value="Holiday">School Holiday</option>
                     <option value="Community">Community</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Location</label>
-                <input
-                  type="text"
-                  value={newEventForm.location || ''}
-                  onChange={(e) => setNewEventForm({ ...newEventForm, location: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Time Window
+                  </label>
+                  <input
+                    type="text"
+                    value={newEventForm.time || ''}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, time: e.target.value })}
+                    placeholder="e.g. 09:00 AM ~ 12:30 PM"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Location / Room
+                  </label>
+                  <input
+                    type="text"
+                    value={newEventForm.location || ''}
+                    onChange={(e) => setNewEventForm({ ...newEventForm, location: e.target.value })}
+                    placeholder="e.g. Main Examination Hall"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Description (Optional)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Brief Description
+                </label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={newEventForm.description || ''}
                   onChange={(e) => setNewEventForm({ ...newEventForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Key instructions or notes for students and parents..."
+                  className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 leading-relaxed"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsEditingEvent(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg"
+                  className="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-slate-900 text-white font-bold rounded-lg shadow-sm"
+                  className="px-5 py-2 bg-blue-950 hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-1.5"
                 >
-                  Save Event
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>Save School Event</span>
                 </button>
               </div>
             </form>
@@ -1634,93 +2026,144 @@ export const AdminPage: React.FC<AdminPageProps> = ({
         </div>
       )}
 
-      {/* NEWS EDIT / CREATE MODAL */}
+      {/* ========================================================
+          MODAL 3: WRITE / EDIT NEWS STORY
+      ======================================================== */}
       {isEditingNews && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-base font-bold text-slate-900 font-serif">
-                {newNewsForm.id ? 'Edit School News' : 'Publish School News'}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-scale-in">
+            <div className="p-4 sm:p-5 bg-blue-950 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 bg-blue-900 text-amber-400 rounded-xl flex items-center justify-center">
+                  <Newspaper className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-serif">
+                    {newNewsForm.id ? 'Edit School News Story' : 'Write School News Story'}
+                  </h3>
+                  <p className="text-xs text-blue-200">Share highlights, student achievements, and campus updates</p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsEditingNews(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm"
               >
-                <X className="w-5 h-5" />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveNews} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveNews} className="p-5 sm:p-6 space-y-4 overflow-y-auto">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Title *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Story Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={newNewsForm.title || ''}
                   onChange={(e) => setNewNewsForm({ ...newNewsForm, title: e.target.value })}
-                  placeholder="Article headline"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="e.g. Life-Prep Students Clinch Top Honors at Lalitpur STEM Robotics Olympiad"
+                  className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Category</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    News Category
+                  </label>
                   <select
                     value={newNewsForm.category || 'Campus Life'}
-                    onChange={(e) => setNewNewsForm({ ...newNewsForm, category: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg bg-white"
+                    onChange={(e) => setNewNewsForm({ ...newNewsForm, category: e.target.value as any })}
+                    className="w-full text-xs px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
                   >
                     <option value="Campus Life">Campus Life</option>
                     <option value="Academics">Academics</option>
-                    <option value="Sports">Sports</option>
+                    <option value="Sports & Arts">Sports & Arts</option>
+                    <option value="Admissions">Admissions</option>
                     <option value="Community">Community</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Publication Date</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Reading Time
+                  </label>
                   <input
                     type="text"
-                    value={newNewsForm.date || ''}
-                    onChange={(e) => setNewNewsForm({ ...newNewsForm, date: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    value={newNewsForm.readTime || '3 min read'}
+                    onChange={(e) => setNewNewsForm({ ...newNewsForm, readTime: e.target.value })}
+                    placeholder="3 min read"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Excerpt / Short Summary</label>
-                <textarea
-                  rows={2}
-                  value={newNewsForm.excerpt || ''}
-                  onChange={(e) => setNewNewsForm({ ...newNewsForm, excerpt: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Featured Image URL</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Photo URL
+                </label>
                 <input
                   type="url"
                   value={newNewsForm.image || ''}
                   onChange={(e) => setNewNewsForm({ ...newNewsForm, image: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="https://images.unsplash.com/photo-..."
+                  className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
+                />
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {SAMPLE_IMAGE_PRESETS.map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => setNewNewsForm({ ...newNewsForm, image: p.url })}
+                      className="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded"
+                    >
+                      Use {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Short Summary (Excerpt)
+                </label>
+                <input
+                  type="text"
+                  value={newNewsForm.excerpt || ''}
+                  onChange={(e) => setNewNewsForm({ ...newNewsForm, excerpt: e.target.value })}
+                  placeholder="One or two sentences summarizing the news..."
+                  className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
 
-              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Full Article Content
+                </label>
+                <textarea
+                  rows={5}
+                  value={newNewsForm.content || ''}
+                  onChange={(e) => setNewNewsForm({ ...newNewsForm, content: e.target.value })}
+                  placeholder="Write the full school news story here..."
+                  className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 leading-relaxed font-sans"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsEditingNews(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg"
+                  className="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-slate-900 text-white font-bold rounded-lg shadow-sm"
+                  className="px-5 py-2 bg-blue-950 hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-1.5"
                 >
-                  Publish News
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>Publish News Story</span>
                 </button>
               </div>
             </form>
@@ -1728,118 +2171,132 @@ export const AdminPage: React.FC<AdminPageProps> = ({
         </div>
       )}
 
-      {/* ARTICLE EDIT / CREATE MODAL */}
+      {/* ========================================================
+          MODAL 4: PUBLISH / EDIT FACULTY ARTICLE
+      ======================================================== */}
       {isEditingArticle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 my-auto">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-base font-bold text-slate-900 font-serif">
-                {newArticleForm.id ? 'Edit Faculty Article' : 'Publish Faculty Column'}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-scale-in">
+            <div className="p-4 sm:p-5 bg-blue-950 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 bg-blue-900 text-amber-400 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-serif">
+                    {newArticleForm.id ? 'Edit Faculty Article' : 'Publish New Faculty Article'}
+                  </h3>
+                  <p className="text-xs text-blue-200">Share teaching philosophies and pedagogical reflections</p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsEditingArticle(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm"
               >
-                <X className="w-5 h-5" />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveArticle} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveArticle} className="p-5 sm:p-6 space-y-4 overflow-y-auto">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Article Title *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Article Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={newArticleForm.title || ''}
                   onChange={(e) => setNewArticleForm({ ...newArticleForm, title: e.target.value })}
-                  placeholder="e.g. Constructivist Pedagogy in Early Years"
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="e.g. Constructivism in Modern Education: Moving Beyond Rote Learning"
+                  className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Author Name *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Author Educator Name <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
                     value={newArticleForm.authorName || ''}
                     onChange={(e) => setNewArticleForm({ ...newArticleForm, authorName: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="e.g. Mr. Raju Moktan"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                   />
                 </div>
+
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Author Role</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Author Role / Title
+                  </label>
                   <input
                     type="text"
                     value={newArticleForm.authorRole || ''}
                     onChange={(e) => setNewArticleForm({ ...newArticleForm, authorRole: e.target.value })}
-                    placeholder="e.g. Lead Educator"
-                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="e.g. Founder & Principal"
+                    className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Academic Division</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Academic Division
+                </label>
                 <select
                   value={newArticleForm.division || 'general'}
-                  onChange={(e) => setNewArticleForm({ ...newArticleForm, division: e.target.value as ArticleDivision })}
-                  className="w-full px-3 py-2 border rounded-lg bg-white"
+                  onChange={(e) => setNewArticleForm({ ...newArticleForm, division: e.target.value as any })}
+                  className="w-full text-xs px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
                 >
-                  <option value="general">General Pedagogy</option>
-                  <option value="pre-primary">Early Childhood Development (ECD)</option>
-                  <option value="primary">Primary School (Grades 1–5)</option>
-                  <option value="secondary">Secondary School (Grades 6–10)</option>
+                  <option value="general">All-School Pedagogy (General)</option>
+                  <option value="pre-primary">Early Years (Pre-Primary / ECD)</option>
+                  <option value="primary">Primary Division (Grades 1–5)</option>
+                  <option value="secondary">Secondary Division (Grades 6–10)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Short Excerpt / Summary</label>
-                <input
-                  type="text"
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Brief Summary
+                </label>
+                <textarea
+                  rows={2}
                   value={newArticleForm.summary || ''}
                   onChange={(e) => setNewArticleForm({ ...newArticleForm, summary: e.target.value })}
-                  placeholder="Key takeaway..."
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="One paragraph overview of the essay..."
+                  className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 leading-relaxed"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Article Body / Content *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Full Essay Content
+                </label>
                 <textarea
-                  required
-                  rows={4}
+                  rows={6}
                   value={newArticleForm.content || ''}
                   onChange={(e) => setNewArticleForm({ ...newArticleForm, content: e.target.value })}
-                  placeholder="Full text of the essay or column..."
-                  className="w-full px-3 py-2 border rounded-lg"
+                  placeholder="Write the full column or essay here..."
+                  className="w-full text-xs px-3.5 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 leading-relaxed font-sans"
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Cover Image URL</label>
-                <input
-                  type="url"
-                  value={newArticleForm.coverImage || ''}
-                  onChange={(e) => setNewArticleForm({ ...newArticleForm, coverImage: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setIsEditingArticle(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg"
+                  className="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-slate-900 text-white font-bold rounded-lg shadow-sm"
+                  className="px-5 py-2 bg-blue-950 hover:bg-blue-900 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center space-x-1.5"
                 >
-                  Publish Column
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>Save Faculty Article</span>
                 </button>
               </div>
             </form>
@@ -1847,54 +2304,88 @@ export const AdminPage: React.FC<AdminPageProps> = ({
         </div>
       )}
 
-      {/* POPUP PREVIEW MODAL */}
+      {/* ========================================================
+          FULL VISITOR PREVIEW MODAL FOR POPUPS
+      ======================================================== */}
       {previewPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-5 space-y-3 relative">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 relative animate-scale-in">
+            {/* Modal close */}
             <button
               onClick={() => setPreviewPopup(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-1"
+              className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-slate-900/40 hover:bg-slate-900/60 text-white flex items-center justify-center text-sm"
             >
-              <X className="w-5 h-5" />
+              ✕
             </button>
 
-            <span className="text-[10px] font-bold text-blue-900 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded">
-              Live Visitor Preview
-            </span>
-
             {previewPopup.popupType === 'template' ? (
-              <div className="space-y-3 pt-1">
-                <h3 className="text-lg font-bold font-serif text-slate-900">
+              <div className="p-6 sm:p-7 space-y-4">
+                <div className="inline-flex items-center space-x-2 bg-blue-50 text-blue-950 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                  <span>{previewPopup.badgeText || 'NOTICE'}</span>
+                </div>
+
+                <h3 className="text-xl font-bold font-serif text-slate-900 leading-snug">
                   {previewPopup.title}
                 </h3>
-                <div className="bg-slate-50 p-3 rounded-lg text-xs space-y-1.5 border border-slate-200">
-                  <p className="font-bold text-blue-900">Date: {previewPopup.dateTime || 'TBD'}</p>
-                  <p className="font-bold text-slate-800">Venue: {previewPopup.location || 'Campus'}</p>
-                  <p className="text-slate-600">Audience: {previewPopup.targetAudience || 'All'}</p>
+
+                {previewPopup.tagline && (
+                  <p className="text-xs font-bold text-blue-900">{previewPopup.tagline}</p>
+                )}
+
+                <div className="space-y-2 py-2 text-xs text-slate-700">
+                  {previewPopup.dateTime && (
+                    <div className="flex items-center space-x-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <Clock className="w-4 h-4 text-blue-900 shrink-0" />
+                      <span className="font-medium">{previewPopup.dateTime}</span>
+                    </div>
+                  )}
+
+                  {previewPopup.location && (
+                    <div className="flex items-center space-x-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <MapPin className="w-4 h-4 text-blue-900 shrink-0" />
+                      <span className="font-medium">{previewPopup.location}</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {previewPopup.description}
-                </p>
-                <button className="w-full py-2 bg-blue-900 text-amber-300 font-bold text-xs rounded-lg shadow-sm">
-                  {previewPopup.ctaText || 'Learn More'}
+
+                {previewPopup.description && (
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {previewPopup.description}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPreviewPopup(null);
+                    if (previewPopup.ctaAction === 'admissions') onOpenAdmissions();
+                    else if (previewPopup.ctaAction === 'tour') onOpenTour();
+                  }}
+                  className="w-full py-3 bg-blue-950 hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-md transition-colors"
+                >
+                  {previewPopup.ctaText || 'Apply for Admissions Online'}
                 </button>
               </div>
             ) : (
-              <div className="space-y-3 pt-1">
-                <h3 className="text-sm font-bold font-serif text-slate-900">
-                  {previewPopup.title}
-                </h3>
+              <div>
                 {previewPopup.imageUrl ? (
                   <img
                     src={previewPopup.imageUrl}
                     alt={previewPopup.title}
-                    className="w-full max-h-72 object-contain rounded-lg bg-slate-900"
+                    className="w-full h-auto max-h-[70vh] object-cover"
                   />
                 ) : (
-                  <div className="h-32 bg-slate-100 rounded-lg flex items-center justify-center text-xs text-slate-400">
-                    No image uploaded
-                  </div>
+                  <div className="p-12 text-center text-slate-400">No poster image URL specified</div>
                 )}
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700">{previewPopup.title}</span>
+                  <button
+                    onClick={() => setPreviewPopup(null)}
+                    className="text-xs font-bold text-blue-900"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
           </div>
